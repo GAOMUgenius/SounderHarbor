@@ -1,0 +1,16 @@
+{
+  "color": [
+    {
+      "name": "tab_sellcted_color",
+      "value": "#b0e1e6"
+    },
+    {
+      "name": "tab_title_color",
+      "value": "#325d6d"
+    },
+    {
+      "name": "tab_background_color",
+      "value": "#FFFFFFFF"
+    }
+  ]
+}

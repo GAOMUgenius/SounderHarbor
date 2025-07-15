@@ -1,0 +1,1 @@
+export { CommonUtil } from './src/main/ets/utils/CommonUtil';

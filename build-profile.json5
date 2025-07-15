@@ -27,7 +27,7 @@
   "modules": [
     {
       "name": "entry",
-      "srcPath": "./entry",
+      "srcPath": "./products/entry",
       "targets": [
         {
           "name": "default",
@@ -36,6 +36,18 @@
           ]
         }
       ]
+    },
+    {
+      "name": "tab",
+      "srcPath": "./features/tab",
+    },
+    {
+      "name": "home",
+      "srcPath": "./features/home",
+    },
+    {
+      "name": "utils",
+      "srcPath": "./commons/utils"
     }
   ]
 }

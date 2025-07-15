@@ -1,0 +1,21 @@
+import { CategoryTab } from "../components/CategoryTab"
+import { TopicComponent } from "../components/TopicComponent"
+
+@Component
+export struct HomePage {
+  build() {
+    Row() {
+      Column() {
+        TopicComponent()
+
+        CategoryTab()
+      }
+      .alignItems(HorizontalAlign.Start)
+      .width('90%')
+      .height('100%')
+    }
+    .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+  }
+}
