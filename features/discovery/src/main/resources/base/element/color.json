@@ -1,0 +1,36 @@
+{
+  "color": [
+    {
+      "name": "app_main_fontcolor",
+      "value": "#385c70"
+    },
+    {
+      "name": "tab_sellcted_color",
+      "value": "#b0e1e6"
+    },
+    {
+      "name": "tab_title_color",
+      "value": "#325d6d"
+    },
+    {
+      "name": "card_background_color_01",
+      "value": "#80c4cf"
+    },
+    {
+      "name": "card_background_color_02",
+      "value": "#f5c6ce"
+    },
+    {
+      "name": "card_font_color_white",
+      "value": "#ffffff"
+    },
+    {
+      "name": "card_button_color_01",
+      "value": "#b0e1e8"
+    },
+    {
+      "name": "card_button_color_02",
+      "value": "#FFFDE1E5"
+    }
+  ]
+}

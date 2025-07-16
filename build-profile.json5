@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\GAOMUgenius\\.ohos\\config\\default_SoundHarbor_lJZz9gj0g3LVmXGjtM3wPzJKM7dj6rI2VxpzKkRotzk=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B09F14620FF6DAB93AABDFFFB51D776A1AAF361E8F83BE70506E1305516EC7787D884706586E13A",
+          "profile": "C:\\Users\\GAOMUgenius\\.ohos\\config\\default_SoundHarbor_lJZz9gj0g3LVmXGjtM3wPzJKM7dj6rI2VxpzKkRotzk=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\GAOMUgenius\\.ohos\\config\\default_SoundHarbor_lJZz9gj0g3LVmXGjtM3wPzJKM7dj6rI2VxpzKkRotzk=.p12",
+          "storePassword": "0000001B7F2FAB0BDD8EECF2C2B3053ADFB03DB8EDF2CD14AED38A0D29987D2B5ABADE3155616DA3C41BA3"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
@@ -48,6 +62,14 @@
     {
       "name": "utils",
       "srcPath": "./commons/utils"
+    },
+    {
+      "name": "discovery",
+      "srcPath": "./features/discovery",
+    },
+    {
+      "name": "datasource",
+      "srcPath": "./commons/datasource",
     }
   ]
 }

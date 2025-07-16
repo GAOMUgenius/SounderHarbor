@@ -11,6 +11,7 @@ export struct CategoryTab {
   @Local animationDuration: number = 300
   @Local indicatorLeftMargin: number = 0
   @Local indicatorWidth: number = 0
+  @Local tabFontSizes: number[] = [22, 18, 18, 18]
   private tabsWidth: number = 0
   private textInfos: [number, number][] = []
   private isStartAnimateTo: boolean = false
@@ -19,13 +20,14 @@ export struct CategoryTab {
     for (let i = 0; i < this.tabArray.length; i++) {
       this.textInfos.push([0, 0]);
     }
+    this.tabFontSizes[0] = 22
   }
 
   @Builder
   tabBuilder(index: number, name: string) {
     Column() {
-      Text(name)
-        .fontSize(this.currentIndex === index ? 22 : 18)
+      Text(name)// .fontSize(this.currentIndex === index ? 22 : 18)
+        .fontSize(this.tabFontSizes[index])
         .width(80)
         .textAlign(TextAlign.Center)
         .fontFamily('SoundHarborNormalFont')
@@ -51,16 +53,35 @@ export struct CategoryTab {
         .backgroundColor($r('app.color.tab_sellcted_color'))
 
       Tabs({ barPosition: BarPosition.Start }) {
-        ForEach(this.tabArray, (item: [string, CategoryType], index: number) => {
-          TabContent() {
-            Text(item[0])
-          }
-          .tabBar(this.tabBuilder(index, item[0]))
-        })
+        TabContent() {
+          Text(this.tabArray[0][0])
+            .layoutWeight(1)
+        }
+        .tabBar(this.tabBuilder(CategoryType.RECOMMEND, this.tabArray[0][0]))
+
+        TabContent() {
+          Text(this.tabArray[1][0])
+            .layoutWeight(1)
+        }
+        .tabBar(this.tabBuilder(CategoryType.RANKING, this.tabArray[1][0]))
+
+        TabContent() {
+          Text(this.tabArray[2][0])
+            .layoutWeight(1)
+        }
+        .tabBar(this.tabBuilder(CategoryType.ALBUM, this.tabArray[2][0]))
+
+        TabContent() {
+          Text(this.tabArray[3][0])
+            .layoutWeight(1)
+        }
+        .tabBar(this.tabBuilder(CategoryType.CONCERN, this.tabArray[3][0]))
       }
       .barHeight(50)
       .width('90%')
-      .height('auto') //设置高度为自定义，避免高度计算错误
+      // .height('auto') //设置高度为自定义，避免高度计算错误
+      .layoutWeight(1)
+      .edgeEffect(EdgeEffect.None)
       .animationDuration(this.animationDuration)
       .onAreaChange((oldValue: Area, newValue: Area) => {
         this.tabsWidth = newValue.width as number
@@ -73,19 +94,23 @@ export struct CategoryTab {
       })
       .onAnimationStart((index: number, targetIndex: number, event: TabsAnimationEvent) => {
         // 切换动画开始时触发该回调。下划线跟着页面一起滑动，同时宽度渐变。
-        this.currentIndex = targetIndex
         this.startAnimateTo(this.animationDuration, this.textInfos[targetIndex][0], this.textInfos[targetIndex][1])
+        this.animateFontSize(targetIndex, index) // 新增：开始字体大小动画
+        this.currentIndex = targetIndex
       })
       .onAnimationEnd((index: number, event: TabsAnimationEvent) => {
         // 切换动画结束时触发该回调。下划线动画停止。
         let currentIndicatorInfo = this.getCurrentIndicatorInfo(index, event)
         this.startAnimateTo(0, currentIndicatorInfo.left, currentIndicatorInfo.width)
+        this.updateFontSize(currentIndicatorInfo.index) // 新增：更新字体大小
       })
+
       .onGestureSwipe((index: number, event: TabsAnimationEvent) => {
         // 在页面跟手滑动过程中，逐帧触发该回调。
         let currentIndicatorInfo = this.getCurrentIndicatorInfo(index, event)
         this.currentIndex = currentIndicatorInfo.index
         this.setIndicatorAttr(currentIndicatorInfo.left, currentIndicatorInfo.width)
+        this.updateFontSizeOnSwipe(index, currentIndicatorInfo.index, event.currentOffset) // 新增：滑动时更新字体大小
       })
 
     }
@@ -132,5 +157,54 @@ export struct CategoryTab {
     } else {
       this.indicatorLeftMargin = leftMargin - 19
     }
+  }
+
+  // 新增：字体大小动画函数
+  private animateFontSize(targetIndex: number, currentIndex: number) {
+    animateTo({
+      duration: this.animationDuration,
+      curve: Curve.Linear,
+      iterations: 1,
+      playMode: PlayMode.Normal
+    }, () => {
+      // 重置所有字体大小
+      for (let i = 0; i < this.tabFontSizes.length; i++) {
+        this.tabFontSizes[i] = 18
+      }
+      // 设置目标标签的字体大小
+      this.tabFontSizes[targetIndex] = 22
+    })
+  }
+
+  // 新增：滑动时更新字体大小
+  private updateFontSizeOnSwipe(currentIndex: number, targetIndex: number, offset: number) {
+    const swipeRatio = Math.abs(offset / this.tabsWidth)
+
+    // 重置所有字体大小
+    for (let i = 0; i < this.tabFontSizes.length; i++) {
+      this.tabFontSizes[i] = 18
+    }
+    if (this.currentIndex === currentIndex) {
+      this.tabFontSizes[currentIndex] = 22 - (4 * swipeRatio)
+      for (let i = 0; i < this.tabFontSizes.length; i++) {
+        if (i !== currentIndex) {
+          this.tabFontSizes[i] = 18
+        }
+      }
+    } else {
+      // 如果当前页已经切换，那么按照动画进度调整
+      this.tabFontSizes[currentIndex] = 18 + (4 * swipeRatio) // 从18px增大到22px
+      this.tabFontSizes[targetIndex] = 22 - (4 * swipeRatio) // 从22px减小到18px
+    }
+  }
+
+  // 新增：更新字体大小
+  private updateFontSize(index: number) {
+    // 重置所有字体大小
+    for (let i = 0; i < this.tabFontSizes.length; i++) {
+      this.tabFontSizes[i] = 18
+    }
+    // 设置当前标签的字体大小
+    this.tabFontSizes[index] = 22
   }
 }
