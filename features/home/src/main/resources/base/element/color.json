@@ -15,6 +15,10 @@
     {
       "name": "tab_background_color",
       "value": "#FFFFFFFF"
+    },
+    {
+      "name": "home_recommend_swiper_indicator_color",
+      "value": "#89bdcc"
     }
   ]
 }

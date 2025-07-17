@@ -1,6 +1,8 @@
 import { CommonUtil } from "utils"
 import { CategoryType } from "../model/CategoriesModel"
 import { LengthMetrics } from "@kit.ArkUI"
+import { RecommendComponent } from "./RecommendComponent"
+import { APPConstants } from "datasource"
 
 @ComponentV2
 export struct CategoryTab {
@@ -30,7 +32,7 @@ export struct CategoryTab {
         .fontSize(this.tabFontSizes[index])
         .width(80)
         .textAlign(TextAlign.Center)
-        .fontFamily('SoundHarborNormalFont')
+        .fontFamily(APPConstants.APPFONTFAMILY)
         .fontColor(this.currentIndex === index ? $r('app.color.tab_background_color') : $r('app.color.tab_title_color'))
         .fontWeight(this.currentIndex === index ? 700 : 500)
         .id(index.toString())
@@ -54,7 +56,7 @@ export struct CategoryTab {
 
       Tabs({ barPosition: BarPosition.Start }) {
         TabContent() {
-          Text(this.tabArray[0][0])
+          RecommendComponent()
             .layoutWeight(1)
         }
         .tabBar(this.tabBuilder(CategoryType.RECOMMEND, this.tabArray[0][0]))
@@ -78,7 +80,7 @@ export struct CategoryTab {
         .tabBar(this.tabBuilder(CategoryType.CONCERN, this.tabArray[3][0]))
       }
       .barHeight(50)
-      .width('90%')
+      .width('100%')
       // .height('auto') //设置高度为自定义，避免高度计算错误
       .layoutWeight(1)
       .edgeEffect(EdgeEffect.None)

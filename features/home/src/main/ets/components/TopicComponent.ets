@@ -1,3 +1,5 @@
+import { APPConstants } from "datasource"
+
 @Component
 export struct TopicComponent {
   build() {
@@ -5,7 +7,7 @@ export struct TopicComponent {
       Text('Home')
         .fontSize(40)
         .fontWeight(FontWeight.Bolder)
-        .fontFamily('SoundHarborNormalFont')
+        .fontFamily(APPConstants.APPFONTFAMILY)
         .fontColor($r('app.color.app_main_fontcolor'))
 
       Image($r('app.media.home_user_img'))

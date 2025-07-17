@@ -1,3 +1,4 @@
+import { APPConstants } from "datasource"
 import Constants from "../Contants/Constants"
 import { CardInfo, CardsSource, CardStateType } from "../model/CardModel"
 
@@ -9,6 +10,8 @@ export struct DiscSwiperComponent {
   @Local offsetY: number = 0
   @Local cardStates: CardStateType[] = []
   @Local swipeDistance: number = 0
+  @Local targetIndex: number = -1 // 目标卡片索引（用于动画）
+  @Local animationProgress: number = 0 // 动画进度（0-1）
   private isDragging: boolean = false
   private startY: number = 0
 
@@ -22,12 +25,14 @@ export struct DiscSwiperComponent {
 
   // 更新所有卡片状态（适配循环逻辑）
   private updateCardStates(): void {
-    this.cardStates = this.cardList.map((_, i) => {
-      // 计算循环后的实际索引差（核心修改）
-      const effectiveDiff = this.getEffectiveDiff(i)
+    // 计算实际显示的索引（考虑动画过渡）
+    const displayIndex = this.targetIndex >= 0
+      ? this.currentIndex + (this.targetIndex - this.currentIndex) * this.animationProgress
+      : this.currentIndex;
 
+    this.cardStates = this.cardList.map((_, i) => {
+      const effectiveDiff = this.getEffectiveDiff(i, displayIndex)
       const angleFactor = effectiveDiff > 0 ? 1.2 : 1;
-      // 使用循环后的索引差计算角度
       let angle = 180 - (effectiveDiff * Constants.CARD_ANGLE * angleFactor) - (this.offsetY * 0.3)
 
       // 确保角度在0-360度循环
@@ -49,18 +54,18 @@ export struct DiscSwiperComponent {
   }
 
   // 计算循环后的有效索引差
-  private getEffectiveDiff(targetIndex: number): number {
+  private getEffectiveDiff(targetIndex: number, displayIndex: number): number {
     const len = this.cardList.length
     if (len === 0) {
       return 0
     }
 
-    // 将currentIndex映射到有效索引范围（0 ~ len-1）
-    const normalizedCurrent = (this.currentIndex % len + len) % len
+    // 将displayIndex映射到有效索引范围（0 ~ len-1）
+    const normalizedCurrent = (displayIndex % len + len) % len
     // 计算目标索引与映射后当前索引的差
     let diff = targetIndex - normalizedCurrent
 
-    // 处理循环场景：如果差的绝对值大于len/2，取更短路径（优化视觉连续性）
+    // 处理循环场景：如果差的绝对值大于len/2，取更短路径
     if (diff > len / 2) {
       diff -= len
     } else if (diff < -len / 2) {
@@ -128,7 +133,6 @@ export struct DiscSwiperComponent {
         this.currentIndex += step
       }
     }
-
     // 动画恢复初始位置
     animateTo({
       duration: 300,
@@ -139,24 +143,63 @@ export struct DiscSwiperComponent {
     })
   }
 
+  // 点击卡片事件处理
+  private onCardClick(index: number): void {
+    const normalizedCurrent = (this.currentIndex % this.cardList.length + this.cardList.length) % this.cardList.length;
+
+    // 如果点击的是当前选中卡片，不执行操作
+    if (index === normalizedCurrent) {
+      return;
+    }
+
+    // 设置目标索引和动画进度
+    this.targetIndex = index;
+    this.animationProgress = 0;
+
+    // 执行滑动动画
+    animateTo({
+      duration: 400,
+      curve: Curve.EaseOut,
+      onFinish: () => {
+        // 动画完成后更新当前索引
+        this.currentIndex = index;
+        this.targetIndex = -1;
+        this.animationProgress = 0;
+        this.updateCardStates();
+      }
+    }, () => {
+      // 动画过程中更新进度
+      this.animationProgress += 0.05;
+      if (this.animationProgress > 1) {
+        this.animationProgress = 1;
+      }
+      this.updateCardStates();
+    });
+  }
+
+  // 获取当前选中卡片的索引（归一化）
+  private getNormalizedCurrentIndex(): number {
+    const len = this.cardList.length;
+    if (len === 0) {
+      return 0;
+    }
+    return (this.currentIndex % len + len) % len;
+  }
+
   build() {
     Stack({ alignContent: Alignment.Center }) {
       // 只显示当前卡片及前后各一张（共3张）
       LazyForEach(this.data, (card: CardInfo, index: number) => {
 
-        if (this.cardList.length === 0) {
-
-        } else {
+        if (this.cardList.length !== 0) {
           // 显示当前卡片及前后各两张（循环逻辑下的5张卡片）
-          if ((index - (this.currentIndex % this.cardList.length + this.cardList.length) % this.cardList.length +
-          this.cardList.length) % this.cardList.length <= 2 ||
-            (index - (this.currentIndex % this.cardList.length + this.cardList.length) % this.cardList.length +
-            this.cardList.length) % this.cardList.length >= this.cardList.length - 2) {
+          // 显示当前卡片及前后各两张
+          if (((index - this.getNormalizedCurrentIndex() + this.cardList.length) % this.cardList.length) <= 2 ||
+            ((index - this.getNormalizedCurrentIndex() + this.cardList.length) % this.cardList.length) >=
+              this.cardList.length - 2) {
             this.CardItem(card, index);
           }
         }
-
-
       }, (card: CardInfo) => card.id.toString())
     }
     .margin({ top: 65 })
@@ -174,7 +217,7 @@ export struct DiscSwiperComponent {
   private CardItem(card: CardInfo, index: number) {
     Column() {
       Row() {
-        Image($r(card.img))
+        Image(card.img)
           .width(110)
           .height(110)
           .objectFit(ImageFit.Cover)
@@ -188,7 +231,7 @@ export struct DiscSwiperComponent {
             .letterSpacing(3)
             .padding({ left: 5 })
             .fontColor(index % 2 === 0 ? $r('app.color.app_main_fontcolor') : $r('app.color.card_font_color_white'))
-            .fontFamily('SoundHarborNormalFont')
+            .fontFamily(APPConstants.APPFONTFAMILY)
 
           Text(card.introduce)
             .width('100%')
@@ -198,7 +241,7 @@ export struct DiscSwiperComponent {
             .padding({ left: 5 })
             .opacity(0.7)
             .fontColor(index % 2 === 0 ? $r('app.color.app_main_fontcolor') : $r('app.color.card_font_color_white'))
-            .fontFamily('SoundHarborNormalFont')
+            .fontFamily(APPConstants.APPFONTFAMILY)
 
           Text(card.singer)
             .width('100%')
@@ -207,7 +250,7 @@ export struct DiscSwiperComponent {
             .margin({ top: 6 })
             .padding({ left: 5 })
             .fontColor(index % 2 === 0 ? $r('app.color.app_main_fontcolor') : $r('app.color.card_font_color_white'))
-            .fontFamily('SoundHarborNormalFont')
+            .fontFamily(APPConstants.APPFONTFAMILY)
 
           Rating({ rating: 2, indicator: true })
             .stars(5)
@@ -233,16 +276,16 @@ export struct DiscSwiperComponent {
         Text(card.title)
           .fontSize(35)
           .fontColor(index % 2 === 0 ? $r('app.color.app_main_fontcolor') : $r('app.color.card_font_color_white'))
-          .fontFamily('SoundHarborNormalFont')
+          .fontFamily(APPConstants.APPFONTFAMILY)
           .fontWeight(FontWeight.Medium)
           .height(80)
-          .width(110)
+          .width(150)
           .letterSpacing(5)
 
         Text(card.price)
           .fontSize(25)
           .fontColor(index % 2 === 0 ? $r('app.color.app_main_fontcolor') : $r('app.color.card_font_color_white'))
-          .fontFamily('SoundHarborNormalFont')
+          .fontFamily(APPConstants.APPFONTFAMILY)
           .backgroundColor(index % 2 === 0 ? $r('app.color.card_button_color_01') :
           $r('app.color.card_button_color_02'))
           .height(80)
@@ -268,9 +311,12 @@ export struct DiscSwiperComponent {
         .fontColor(index % 2 === 0 ? $r('app.color.app_main_fontcolor') : $r('app.color.card_font_color_white'))
         .backgroundColor(index % 2 === 0 ? $r('app.color.card_button_color_01') :
         $r('app.color.card_button_color_02'))
-        .fontFamily('SoundHarborNormalFont')
+        .fontFamily(APPConstants.APPFONTFAMILY)
 
     }
+    .onClick(() => {
+      this.onCardClick(index);
+    })
     .height(370)
     .width(370)
     .padding(16)

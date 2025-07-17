@@ -22,7 +22,7 @@ export default class Constants {
       singer: "昭宥",
       rating: 4.9,
       price: "¥28",
-      img: "app.media.swiper_test_img_01"
+      img: "https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/swiper_test_img_01.jpg"
     },
     {
       id: "2",
@@ -31,7 +31,7 @@ export default class Constants {
       singer: "张杰",
       rating: 4.8,
       price: "¥198",
-      img: "app.media.swiper_test_img_02"
+      img: "https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/swiper_test_img_02.jpg"
     },
     {
       id: "3",
@@ -40,7 +40,7 @@ export default class Constants {
       singer: "梁博",
       rating: 4.6,
       price: "¥85",
-      img: "app.media.swiper_test_img_03"
+      img: "https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/swiper_test_img_03.jpg"
     },
     {
       id: "4",
@@ -49,7 +49,7 @@ export default class Constants {
       singer: "周杰伦",
       rating: 5.0,
       price: "¥68",
-      img: "app.media.swiper_test_img_04"
+      img: "https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/swiper_test_img_04.jpg"
     },
     {
       id: "5",
@@ -58,7 +58,7 @@ export default class Constants {
       singer: "万能青年旅店",
       rating: 4.9,
       price: "¥12",
-      img: "app.media.swiper_test_img_05"
+      img: "https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/swiper_test_img_05.jpg"
     },
     {
       id: "6",
@@ -67,7 +67,7 @@ export default class Constants {
       singer: "陈粒",
       rating: 4.7,
       price: "¥96",
-      img: "app.media.swiper_test_img_06"
+      img: "https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/swiper_test_img_06.jpg"
     }
   ];
 }

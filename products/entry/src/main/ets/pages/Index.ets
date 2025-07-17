@@ -1,5 +1,6 @@
 import { HMDefaultGlobalAnimator, HMNavigation } from '@hadss/hmrouter'
 import { AttributeUpdater, font } from '@kit.ArkUI';
+import { APPConstants } from 'datasource';
 
 @Entry
 @ComponentV2
@@ -8,7 +9,7 @@ struct Index {
 
   onPageShow(): void {
     font.registerFont({
-      familyName: "SoundHarborNormalFont",
+      familyName: APPConstants.APPFONTFAMILY,
       familySrc: $rawfile('No.15-ShangShouRunHeiTi-2.ttf')
     })
   }

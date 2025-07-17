@@ -1,3 +1,4 @@
+import { APPConstants } from "datasource";
 import { TabBarType, tabBarTypeData, TabBarTypeData } from "../model/TabBarType";
 
 @ComponentV2
@@ -104,7 +105,7 @@ struct TabItem {
               .fontWeight(FontWeight.Bolder)
               .textAlign(TextAlign.Center)
               .fontWeight(600)
-              .fontFamily('SoundHarborNormalFont')
+              .fontFamily(APPConstants.APPFONTFAMILY)
               .fontColor($r('app.color.tab_title_color'))// .padding({ top: 5 })
               .position({
                 x: this.titleX,

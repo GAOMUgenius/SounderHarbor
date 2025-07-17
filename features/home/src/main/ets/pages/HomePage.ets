@@ -10,6 +10,8 @@ export struct HomePage {
 
         CategoryTab()
           .layoutWeight(1)
+
+
       }
       .alignItems(HorizontalAlign.Start)
       .width('90%')
