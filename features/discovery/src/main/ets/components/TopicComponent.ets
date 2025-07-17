@@ -15,6 +15,9 @@ export struct TopicComponent {
           width: 50,
           height: 50
         })
+        .onClick(() => {
+          
+        })
     }
     .padding({ top: 15 })
     .width('100%')

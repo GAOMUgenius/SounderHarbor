@@ -31,6 +31,10 @@
     {
       "name": "card_button_color_02",
       "value": "#FFFDE1E5"
+    },
+    {
+      "name": "discovery_trending_title_color",
+      "value": "#FF8F8E8E"
     }
   ]
 }

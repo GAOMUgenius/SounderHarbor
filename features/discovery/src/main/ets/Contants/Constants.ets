@@ -9,7 +9,7 @@ export default class Constants {
   // 圆心X坐标
   static readonly CIRCLE_CENTER_X = 300
   // 圆心Y坐标
-  static readonly CIRCLE_CENTER_Y = 125
+  static readonly CIRCLE_CENTER_Y = 150
   // 显示角度范围
   static readonly TOTAL_ANGLE = 150
   // 每张卡片的角度间隔

@@ -1,6 +1,5 @@
-export interface HostMusicData {
-  id: string;
-  title: string;
-  singer: string;
-  img: string
+import { MusicData } from "datasource";
+
+export interface HostMusicData extends MusicData {
+
 }

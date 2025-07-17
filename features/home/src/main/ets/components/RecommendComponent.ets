@@ -3,6 +3,7 @@ import { LengthMetrics } from "@kit.ArkUI";
 import { Constants } from "../constants/Constants";
 import { HostMusicData } from "../model/HostMusicModel";
 import { APPConstants } from "datasource";
+import { RecommendMusicListData } from "../model/RecommendMusicListModel";
 
 
 @ComponentV2
@@ -18,6 +19,8 @@ export struct RecommendComponent {
   private swiperBannerData: SwiperDataSource = new SwiperDataSource([]);
   //热门推荐歌曲区域变量
   private hostMusicData: HostMusicData[] = []
+  //推荐歌单区域变量
+  private recommendMusicListData: RecommendMusicListData[] = []
 
   aboutToAppear(): void {
     //SwiperBanner初始化
@@ -25,6 +28,8 @@ export struct RecommendComponent {
     this.swiperBannerData = new SwiperDataSource(list);
     //热门推荐歌曲初始化
     this.hostMusicData = Constants.RECOMMEND_HOSTMUSIC_HOSTMUSICDATALISTINFO
+    //推荐歌单初始化
+    this.recommendMusicListData = Constants.RECOMMEND_MUSICLIST_RECOMMENDMUSICLISTINGO
   }
 
   build() {
@@ -85,14 +90,43 @@ export struct RecommendComponent {
             }, (item: HostMusicData) => item.id)
           }
           .scrollBar(BarState.Off)
-          .margin({ top: 10 })
+          .margin({ top: 20 })
           .width('100%')
           .height(150)
           .listDirection(Axis.Horizontal)
-
+          .edgeEffect(EdgeEffect.None)
         }
 
-        //新专辑推荐区域
+        //歌单推荐区域
+        Column() {
+          //歌单推荐标题区域
+          Row() {
+            Text('歌单推荐')
+              .fontSize(22)
+              .fontColor($r('app.color.app_main_fontcolor'))
+              .fontFamily(APPConstants.APPFONTFAMILY)
+              .letterSpacing(2)
+            Image($r('app.media.home_recommend_right'))
+              .width(25)
+              .height(10)
+          }
+          .justifyContent(FlexAlign.SpaceBetween)
+          .width('100%')
+
+          List() {
+            ForEach(this.recommendMusicListData, (item: RecommendMusicListData) => {
+              ListItem() {
+                this.RecommendMusicListItem(item)
+              }
+            }, (item: RecommendMusicListData) => item.list_id)
+          }
+          .scrollBar(BarState.Off)
+          .margin({ top: 20 })
+          .width('100%')
+          .height(150)
+          .listDirection(Axis.Horizontal)
+          .edgeEffect(EdgeEffect.None)
+        }
       }
       .height('100%')
       .alignItems(HorizontalAlign.Start)
@@ -113,12 +147,32 @@ export struct RecommendComponent {
         .fontColor($r('app.color.app_main_fontcolor'))
         .fontFamily(APPConstants.APPFONTFAMILY)
         .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
         .width(100)
         .margin({ top: 10 })
       Text(hostMusic.singer)
         .fontSize(14)
         .fontFamily(APPConstants.APPFONTFAMILY)
         .width(100)
+    }
+    .margin({ right: 5, left: 5 })
+    .justifyContent(FlexAlign.Start)
+  }
+
+  @Builder
+  RecommendMusicListItem(recommendMusic: RecommendMusicListData) {
+    Column() {
+      Image(recommendMusic.list_img)
+        .width(100)
+        .height(100)
+        .borderRadius(15)
+      Text(recommendMusic.list_title)
+        .fontSize(16)
+        .fontFamily(APPConstants.APPFONTFAMILY)
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .width(100)
+        .margin({ top: 10 })
     }
     .margin({ right: 5, left: 5 })
     .justifyContent(FlexAlign.Start)
