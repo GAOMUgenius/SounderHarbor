@@ -12,11 +12,11 @@ export struct TopicComponent {
 
       Image($r('app.media.discovery_topic_serch'))
         .size({
-          width: 50,
-          height: 50
+          width: 35,
+          height: 35
         })
         .onClick(() => {
-          
+
         })
     }
     .padding({ top: 15 })

@@ -1,0 +1,12 @@
+{
+  "color": [
+    {
+      "name": "app_main_fontcolor",
+      "value": "#385c70"
+    },
+    {
+      "name": "play_button_background_color",
+      "value": "#f2c7d1"
+    }
+  ]
+}

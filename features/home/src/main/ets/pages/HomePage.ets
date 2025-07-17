@@ -1,7 +1,7 @@
 import { CategoryTab } from "../components/CategoryTab"
 import { TopicComponent } from "../components/TopicComponent"
 
-@Component
+@ComponentV2
 export struct HomePage {
   build() {
     Row() {

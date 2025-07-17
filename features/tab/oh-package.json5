@@ -8,6 +8,7 @@
   "dependencies": {
     "datasource": "file:../../commons/datasource",
     "home": "file:../../features/home",
-    "discovery": "file:../../features/discovery"
+    "discovery": "file:../../features/discovery",
+    "play": "file:../../features/play"
   }
 }

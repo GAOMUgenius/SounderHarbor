@@ -10,14 +10,13 @@ export struct TopicComponent {
         .fontFamily(APPConstants.APPFONTFAMILY)
         .fontColor($r('app.color.app_main_fontcolor'))
 
-      Image($r('app.media.home_user_img'))
+      Image($r('app.media.play_topic_setting'))
         .size({
-          width: 50,
-          height: 50
+          width: 35,
+          height: 35
         })
-        .borderRadius(25)
     }
-    .padding({ top: 15 })
+    .padding({ top: 15, right: '5%', left: '5%' })
     .width('100%')
     .justifyContent(FlexAlign.SpaceBetween)
 

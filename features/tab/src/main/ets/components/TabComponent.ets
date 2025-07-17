@@ -1,6 +1,7 @@
 import { HMParamType, HMRouter } from '@hadss/hmrouter'
 import { DiscoveryPage } from 'discovery';
 import { HomePage } from 'home';
+import { PlayPage } from 'play';
 import { TabBarType } from '../model/TabBarType';
 import { CustomTabBar } from './CustomTabBar';
 
@@ -22,7 +23,7 @@ export struct TabComponent {
         }
 
         TabContent() {
-          Text('Play')
+          PlayPage()
         }
 
         TabContent() {

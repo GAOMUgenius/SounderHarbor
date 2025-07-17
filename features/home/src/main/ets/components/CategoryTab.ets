@@ -28,7 +28,7 @@ export struct CategoryTab {
   @Builder
   tabBuilder(index: number, name: string) {
     Column() {
-      Text(name)// .fontSize(this.currentIndex === index ? 22 : 18)
+      Text(name)
         .fontSize(this.tabFontSizes[index])
         .width(80)
         .textAlign(TextAlign.Center)
@@ -81,7 +81,6 @@ export struct CategoryTab {
       }
       .barHeight(50)
       .width('100%')
-      // .height('auto') //设置高度为自定义，避免高度计算错误
       .layoutWeight(1)
       .edgeEffect(EdgeEffect.None)
       .animationDuration(this.animationDuration)

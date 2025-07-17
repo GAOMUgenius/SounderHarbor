@@ -10,12 +10,12 @@ export struct DiscSwiperComponent {
   @Local offsetY: number = 0
   @Local cardStates: CardStateType[] = []
   @Local swipeDistance: number = 0
-  @Local targetIndex: number = -1 // 目标卡片索引（用于动画）
-  @Local animationProgress: number = 0 // 动画进度（0-1）
+  // 原有滑动相关变量
   private isDragging: boolean = false
   private startY: number = 0
 
   aboutToAppear(): void {
+    // 初始化卡片数据
     Constants.CARD_LIST_INFO.forEach((item) => {
       this.cardList.push(item)
     });
@@ -23,32 +23,21 @@ export struct DiscSwiperComponent {
     this.updateCardStates() // 初始化卡片状态
   }
 
-  // 更新所有卡片状态（适配循环逻辑）
+  // 更新所有卡片状态
   private updateCardStates(): void {
-    // 计算实际显示的索引（考虑动画过渡）
-    const displayIndex = this.targetIndex >= 0
-      ? this.currentIndex + (this.targetIndex - this.currentIndex) * this.animationProgress
-      : this.currentIndex;
-
+    const displayIndex = this.currentIndex;
     this.cardStates = this.cardList.map((_, i) => {
       const effectiveDiff = this.getEffectiveDiff(i, displayIndex)
       const angleFactor = effectiveDiff > 0 ? 1.2 : 1;
+      // 计算角度（
       let angle = 180 - (effectiveDiff * Constants.CARD_ANGLE * angleFactor) - (this.offsetY * 0.3)
-
-      // 确保角度在0-360度循环
-      while (angle >= 360) {
-        angle -= 360
-      }
-      while (angle < 0) {
-        angle += 360
-      }
-
+      angle = (angle % 360 + 360) % 360
       return {
+        angle: angle,
         scale: this.getScale(angle),
         rotate: angle,
         zIndex: this.getZIndex(angle),
-        opacity: this.getOpacity(angle),
-        angle: angle
+        opacity: this.getOpacity(angle)
       } as CardStateType
     })
   }
@@ -59,13 +48,9 @@ export struct DiscSwiperComponent {
     if (len === 0) {
       return 0
     }
-
-    // 将displayIndex映射到有效索引范围（0 ~ len-1）
     const normalizedCurrent = (displayIndex % len + len) % len
-    // 计算目标索引与映射后当前索引的差
     let diff = targetIndex - normalizedCurrent
-
-    // 处理循环场景：如果差的绝对值大于len/2，取更短路径
+    // 处理循环场景
     if (diff > len / 2) {
       diff -= len
     } else if (diff < -len / 2) {
@@ -74,38 +59,43 @@ export struct DiscSwiperComponent {
     return diff
   }
 
-  // 缩放逻辑保持不变（中间卡片最大）
+  // 缩放逻辑
   private getScale(angle: number): number {
-    if (angle >= 90 && angle <= 270) { // 显示范围内的卡片
+    if (angle >= 90 && angle <= 270) { // 显示范围内
       const normalizedAngle = Math.abs(angle - 180) / 90
-      return 1 - normalizedAngle * 0.3 // 越靠近中间越大
+      return 1 - normalizedAngle * 0.3
     }
-    return 0.7 // 超出范围的卡片缩小
+    return 0.7
   }
 
-  // 层级逻辑保持不变（中间卡片最上层）
+  // 层级逻辑
   private getZIndex(angle: number): number {
     const normalizedAngle = Math.abs(angle - 180) / 90
-    return 100 - normalizedAngle * 50 // 越靠近中间层级越高
+    return 100 - normalizedAngle * 50
   }
 
-  // 透明度逻辑保持不变（中间卡片最清晰）
+  // 透明度逻辑
   private getOpacity(angle: number): number {
-    if (angle >= 90 && angle <= 270) { // 显示范围内的卡片
+    if (angle >= 90 && angle <= 270) {
       const normalizedAngle = Math.abs(angle - 180) / 90
-      return 1 - normalizedAngle * 0.4 // 越靠近中间越清晰
+      return 1 - normalizedAngle * 0.4
     }
-    return 0 // 超出范围的卡片隐藏
+    return 0
   }
 
-  // 手势开始：记录初始位置
+  // 线性插值工具
+  private lerp(start: number, end: number, progress: number): number {
+    return start + (end - start) * progress
+  }
+
+  // 手势开始（保留滑动逻辑）
   private onGestureStart(event: GestureEvent): void {
     this.isDragging = true
     this.startY = event.offsetY
-    this.swipeDistance = 0 // 重置滑动距离
+    this.swipeDistance = 0
   }
 
-  // 手势移动：实时更新偏移量和卡片状态
+  // 手势移动（保留滑动逻辑）
   private onGestureUpdate(event: GestureEvent): void {
     if (!this.isDragging) {
       return
@@ -113,10 +103,10 @@ export struct DiscSwiperComponent {
     const deltaY = event.offsetY - this.startY
     this.offsetY = deltaY
     this.swipeDistance = deltaY
-    this.updateCardStates() // 实时更新旋转和位置
+    this.updateCardStates()
   }
 
-  // 手势结束：判断滑动方向并切换卡片
+  // 手势结束（保留滑动切换逻辑）
   private onGestureEnd(event: GestureEvent): void {
     this.isDragging = false
     const deltaY = event.offsetY - this.startY
@@ -124,16 +114,10 @@ export struct DiscSwiperComponent {
 
     if (Math.abs(deltaY) > threshold) {
       const step = Math.floor(Math.abs(deltaY) / 100) || 1
-      // 向下滑动（显示上一张）：currentIndex减1（允许为负）
-      if (deltaY > 0) {
-        this.currentIndex -= step
-      }
-      // 向上滑动（显示下一张）：currentIndex加1（允许超过length-1）
-      else if (deltaY < 0) {
-        this.currentIndex += step
-      }
+      this.currentIndex += deltaY > 0 ? -step : step
     }
-    // 动画恢复初始位置
+
+    // 滑动结束后归位动画
     animateTo({
       duration: 300,
       curve: Curve.Friction
@@ -143,61 +127,22 @@ export struct DiscSwiperComponent {
     })
   }
 
-  // 点击卡片事件处理
-  private onCardClick(index: number): void {
-    const normalizedCurrent = (this.currentIndex % this.cardList.length + this.cardList.length) % this.cardList.length;
-
-    // 如果点击的是当前选中卡片，不执行操作
-    if (index === normalizedCurrent) {
-      return;
-    }
-
-    // 设置目标索引和动画进度
-    this.targetIndex = index;
-    this.animationProgress = 0;
-
-    // 执行滑动动画
-    animateTo({
-      duration: 400,
-      curve: Curve.EaseOut,
-      onFinish: () => {
-        // 动画完成后更新当前索引
-        this.currentIndex = index;
-        this.targetIndex = -1;
-        this.animationProgress = 0;
-        this.updateCardStates();
-      }
-    }, () => {
-      // 动画过程中更新进度
-      this.animationProgress += 0.05;
-      if (this.animationProgress > 1) {
-        this.animationProgress = 1;
-      }
-      this.updateCardStates();
-    });
-  }
-
-  // 获取当前选中卡片的索引（归一化）
+  // 获取归一化的当前索引（保留）
   private getNormalizedCurrentIndex(): number {
-    const len = this.cardList.length;
-    if (len === 0) {
-      return 0;
-    }
-    return (this.currentIndex % len + len) % len;
+    const len = this.cardList.length
+    return len === 0 ? 0 : (this.currentIndex % len + len) % len
   }
 
+  // 布局渲染（保留）
   build() {
     Stack({ alignContent: Alignment.Center }) {
-      // 只显示当前卡片及前后各一张（共3张）
+      // 只渲染当前卡片及前后各2张
       LazyForEach(this.data, (card: CardInfo, index: number) => {
-
         if (this.cardList.length !== 0) {
-          // 显示当前卡片及前后各两张（循环逻辑下的5张卡片）
-          // 显示当前卡片及前后各两张
-          if (((index - this.getNormalizedCurrentIndex() + this.cardList.length) % this.cardList.length) <= 2 ||
-            ((index - this.getNormalizedCurrentIndex() + this.cardList.length) % this.cardList.length) >=
+          if ((index - this.getNormalizedCurrentIndex() + this.cardList.length) % this.cardList.length <= 2 ||
+            (index - this.getNormalizedCurrentIndex() + this.cardList.length) % this.cardList.length >=
               this.cardList.length - 2) {
-            this.CardItem(card, index);
+            this.CardItem(card, index)
           }
         }
       }, (card: CardInfo) => card.id.toString())
@@ -213,9 +158,11 @@ export struct DiscSwiperComponent {
     )
   }
 
+  // 卡片布局（移除点击事件绑定）
   @Builder
   private CardItem(card: CardInfo, index: number) {
     Column() {
+      // 卡片内容（保留原有布局）
       Row() {
         Image(card.img)
           .width(110)
@@ -261,7 +208,6 @@ export struct DiscSwiperComponent {
               backgroundUri: '/../resources/base/media/discovery_card_star_off.svg',
               foregroundUri: '/../resources/base/media/discovery_card_star_on.svg'
             })
-
         }
         .alignItems(HorizontalAlign.Start)
         .margin({ left: 10 })
@@ -288,13 +234,12 @@ export struct DiscSwiperComponent {
           .fontFamily(APPConstants.APPFONTFAMILY)
           .backgroundColor(index % 2 === 0 ? $r('app.color.card_button_color_01') :
           $r('app.color.card_button_color_02'))
-          .height(80)
+          .height(70)
           .margin({ right: 20 })
           .padding(5)
           .textAlign(TextAlign.Center)
           .borderRadius(15)
           .fontWeight(FontWeight.Bold)
-
       }
       .margin({ top: 20, left: 20 })
       .width(258)
@@ -309,14 +254,10 @@ export struct DiscSwiperComponent {
         .textAlign(TextAlign.Center)
         .borderRadius(35)
         .fontColor(index % 2 === 0 ? $r('app.color.app_main_fontcolor') : $r('app.color.card_font_color_white'))
-        .backgroundColor(index % 2 === 0 ? $r('app.color.card_button_color_01') :
-        $r('app.color.card_button_color_02'))
+        .backgroundColor(index % 2 === 0 ? $r('app.color.card_button_color_01') : $r('app.color.card_button_color_02'))
         .fontFamily(APPConstants.APPFONTFAMILY)
-
     }
-    .onClick(() => {
-      this.onCardClick(index);
-    })
+    // 移除点击事件绑定（不再响应卡片点击）
     .height(370)
     .width(370)
     .padding(16)
@@ -330,21 +271,20 @@ export struct DiscSwiperComponent {
       offsetX: 0,
       offsetY: 4
     })
-    // 核心修改：旋转角度绑定到"水平方向与圆心的夹角"（state.angle）
+    // 旋转角度（由卡片状态决定）
     .rotate({
       z: this.cardStates[index].angle,
       angle: this.cardStates[index].angle + 180
     })
+    // 缩放（由卡片状态决定）
     .scale({ x: this.cardStates[index].scale, y: this.cardStates[index].scale })
-    // 位置计算（基于圆形轨迹）
+    // 位置（基于角度计算）
     .position({
-      // 计算基础X、Y坐标（与原逻辑一致）
       x: Constants.CIRCLE_CENTER_X + Constants.CIRCLE_RADIUS * Math.cos(this.cardStates[index].angle * Math.PI / 180),
-      y: this.cardStates[index].angle > 180 ? Constants.CIRCLE_CENTER_Y +
-        Constants.CIRCLE_RADIUS * Math.sin(this.cardStates[index].angle * Math.PI / 180) :
-        Constants.CIRCLE_CENTER_Y +
+      y: this.cardStates[index].angle > 180
+        ? Constants.CIRCLE_CENTER_Y + Constants.CIRCLE_RADIUS * Math.sin(this.cardStates[index].angle * Math.PI / 180)
+        : Constants.CIRCLE_CENTER_Y +
           Constants.CIRCLE_RADIUS * Math.sin(this.cardStates[index].angle * Math.PI / 180) * 1.3
-
     })
     .zIndex(this.cardStates[index].zIndex)
     .opacity(this.cardStates[index].opacity)
