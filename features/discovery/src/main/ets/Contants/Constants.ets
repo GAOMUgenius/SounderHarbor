@@ -17,16 +17,16 @@ export default class Constants {
   static readonly CARD_LIST_INFO: CardInfo[] = [
     {
       id: "1",
-      title: "加冠・登顶",
-      introduce: "特别版",
-      singer: "时代少年团",
+      title: "PDA",
+      introduce: "限定版",
+      singer: "昭宥",
       rating: 4.9,
       price: "¥28",
       img: "app.media.swiper_test_img_01"
     },
     {
       id: "2",
-      title: "未",
+      title: "未·LIVE",
       introduce: "歌曲重制版",
       singer: "张杰",
       rating: 4.8,
@@ -67,7 +67,7 @@ export default class Constants {
       singer: "陈粒",
       rating: 4.7,
       price: "¥96",
-      img: "app.media.swiper_test_img_05"
+      img: "app.media.swiper_test_img_06"
     }
   ];
 }

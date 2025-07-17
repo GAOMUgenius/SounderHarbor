@@ -8,6 +8,7 @@ export struct DiscSwiperComponent {
   @Local currentIndex: number = 0
   @Local offsetY: number = 0
   @Local cardStates: CardStateType[] = []
+  @Local swipeDistance: number = 0
   private isDragging: boolean = false
   private startY: number = 0
 
@@ -47,7 +48,7 @@ export struct DiscSwiperComponent {
     })
   }
 
-  // 核心修改：计算循环后的有效索引差（解决循环逻辑）
+  // 计算循环后的有效索引差
   private getEffectiveDiff(targetIndex: number): number {
     const len = this.cardList.length
     if (len === 0) {
@@ -96,6 +97,7 @@ export struct DiscSwiperComponent {
   private onGestureStart(event: GestureEvent): void {
     this.isDragging = true
     this.startY = event.offsetY
+    this.swipeDistance = 0 // 重置滑动距离
   }
 
   // 手势移动：实时更新偏移量和卡片状态
@@ -105,6 +107,7 @@ export struct DiscSwiperComponent {
     }
     const deltaY = event.offsetY - this.startY
     this.offsetY = deltaY
+    this.swipeDistance = deltaY
     this.updateCardStates() // 实时更新旋转和位置
   }
 
@@ -115,13 +118,14 @@ export struct DiscSwiperComponent {
     const threshold = 50
 
     if (Math.abs(deltaY) > threshold) {
+      const step = Math.floor(Math.abs(deltaY) / 100) || 1
       // 向下滑动（显示上一张）：currentIndex减1（允许为负）
       if (deltaY > 0) {
-        this.currentIndex -= 1
+        this.currentIndex -= step
       }
       // 向上滑动（显示下一张）：currentIndex加1（允许超过length-1）
       else if (deltaY < 0) {
-        this.currentIndex += 1
+        this.currentIndex += step
       }
     }
 
@@ -143,14 +147,12 @@ export struct DiscSwiperComponent {
         if (this.cardList.length === 0) {
 
         } else {
-          // 只显示当前卡片及前后各一张（循环逻辑下的3张卡片）
+          // 显示当前卡片及前后各两张（循环逻辑下的5张卡片）
           if ((index - (this.currentIndex % this.cardList.length + this.cardList.length) % this.cardList.length +
-          this.cardList.length) % this.cardList.length === 0 ||
+          this.cardList.length) % this.cardList.length <= 2 ||
             (index - (this.currentIndex % this.cardList.length + this.cardList.length) % this.cardList.length +
-            this.cardList.length) % this.cardList.length === 1 ||
-            (index - (this.currentIndex % this.cardList.length + this.cardList.length) % this.cardList.length +
-            this.cardList.length) % this.cardList.length === this.cardList.length - 1) {
-            this.CardItem(card, index)
+            this.cardList.length) % this.cardList.length >= this.cardList.length - 2) {
+            this.CardItem(card, index);
           }
         }
 
@@ -260,7 +262,7 @@ export struct DiscSwiperComponent {
         .width(230)
         .height(70)
         .fontSize(30)
-        .letterSpacing(5)
+        .letterSpacing(8)
         .textAlign(TextAlign.Center)
         .borderRadius(35)
         .fontColor(index % 2 === 0 ? $r('app.color.app_main_fontcolor') : $r('app.color.card_font_color_white'))
