@@ -1,75 +1,288 @@
 import Constants from "../constants/Contants"
-import { CardInfo, CardsSource } from "../model/PlayListModel"
-import { CommonUtil } from "utils"
+import { CardInfo, CardsSource } from "../model/PlayListCardModel"
+import { display } from "@kit.ArkUI"
 
 @ComponentV2
 export struct CardSwiperComponent {
-  @Local cardList: CardInfo[] = []
-  @Local cardListSource: CardsSource = new CardsSource([])
-  @Local currentIndex: number = 1 // 当前居中卡片的索引
+  @Local cardsList: CardInfo[] = [];
+  @Local cardsOffset: number[] = [];
+  @Local currentSwiperIndex: number = 0;
+  @Local cardsScale: number[] = [];
+  private data: CardsSource = new CardsSource([]);
+  private displayWidth: number = 0;
+  private swiperMargin: number = Constants.SWIPER_MARGIN;
 
   aboutToAppear(): void {
+    const displayData: display.Display = display.getDefaultDisplaySync();
+    this.displayWidth = this.getUIContext().px2vp(displayData.width);
+    if (canIUse('SystemCapability.Window.SessionManager')) {
+      if ((display.isFoldable() && display.getFoldStatus() === display.FoldStatus.FOLD_STATUS_EXPANDED) ||
+        this.displayWidth >= Constants.DEVICE_SIZE) {
+        this.displayWidth = this.getUIContext().px2vp(displayData.width) / 2;
+      }
+    }
     Constants.CARD_TEST_CASE.forEach((item) => {
-      this.cardList.push((item))
+      this.cardsList.push(item);
+      this.cardsOffset.push(0);
+      this.cardsScale.push(1.0);
     })
-    this.cardListSource = new CardsSource(this.cardList)
+    this.data = new CardsSource(this.cardsList);
+    this.calculateOffset(0);
   }
 
   build() {
-    Swiper() {
-      LazyForEach(this.cardListSource, (item: CardInfo, index: number) => {
-        CardItem({
-          card: item,
-          index: index,
-          currentIndex: this.currentIndex
-        })
+    Column() {
+      Swiper() {
+        LazyForEach(this.data, (item: CardInfo, index: number) => {
+          CardComponent({
+            cardInfo: item,
+            cardOffset: this.cardsOffset[index],
+            cardScale: this.cardsScale[index],
+            cardIndex: index,
+            showingCard: this.currentSwiperIndex
+          })
+        }, (item: CardInfo) => JSON.stringify(item))
+      }
+      .indicator(false)
+      .index(this.currentSwiperIndex)
+      .loop(false)
+      .prevMargin(this.swiperMargin)
+      .nextMargin(this.swiperMargin)
+      .duration(Constants.DURATION)
+      .curve(Curve.Friction)
+      .onChange((index: number) => {
+        this.calculateOffset(index);
+        this.currentSwiperIndex = index;
       })
+      .onGestureSwipe((index, event) => {
+        const currentOffset = event.currentOffset;
+        const maxOffset = this.getMaxOffset(index) / 2;
+        const progress = Math.min(1, Math.abs(currentOffset) / this.displayWidth);
+
+        // 当前卡片缩放：1.0 → 0.95
+        this.cardsScale[index] = 1.0 - progress * 0.05;
+
+        // 左侧卡片缩放：0.85 → 0.95
+        if (currentOffset < 0 && this.isIndexValid(index + 1)) {
+          this.cardsScale[index + 1] = 0.85 + progress * 0.1;
+        }
+
+        // 右侧卡片缩放：0.85 → 0.95
+        if (currentOffset > 0 && this.isIndexValid(index - 1)) {
+          this.cardsScale[index - 1] = 0.85 + progress * 0.1;
+        }
+
+        if (currentOffset < 0) {
+          this.cardsOffset[index] = (-currentOffset / this.displayWidth) * maxOffset + maxOffset;
+          if (this.isIndexValid(index + 1)) {
+            const maxOffset = this.getMaxOffset(index + 1) / 2;
+            this.cardsOffset[index + 1] = (-currentOffset / this.displayWidth) * maxOffset;
+          }
+          if (this.isIndexValid(index - 1)) {
+            const maxOffset = this.getMaxOffset(index - 1) / 2;
+            this.cardsOffset[index - 1] = (currentOffset / this.displayWidth) * maxOffset + 2 * maxOffset;
+          }
+        } else if (currentOffset > 0) {
+          this.cardsOffset[index] = maxOffset - (currentOffset / this.displayWidth) * maxOffset;
+          if (this.isIndexValid(index + 1)) {
+            const maxOffset = this.getMaxOffset(index + 1) / 2;
+            this.cardsOffset[index + 1] = (currentOffset / this.displayWidth) * maxOffset;
+          }
+          if (this.isIndexValid(index - 1)) {
+            const maxOffset = this.getMaxOffset(index - 1) / 2;
+            this.cardsOffset[index - 1] = 2 * maxOffset - (currentOffset / this.displayWidth) * maxOffset;
+          }
+        }
+      })
+      .onAnimationStart((_index, targetIndex) => {
+        // 只重置非相邻卡片的缩放
+        this.cardsList.forEach((_, i) => {
+          if (Math.abs(i - targetIndex) > 1) {
+            this.cardsScale[i] = 0.85;
+          }
+        });
+        // 确保相邻卡片保持正确缩放
+        this.calculateOffset(targetIndex); // 内部已设置左右卡片为0.85
+      })
+      .onAnimationEnd(() => {
+
+      })
+      .height(300)
     }
-    .loop(false)
-    .indicator(false)
-    .displayCount(3) // 同时显示3张卡片
-    .itemSpace(80) // 卡片之间的间距
-    .onChange((index: number) => {
-      this.currentIndex = (index + 1) % this.cardListSource.totalCount()
-    })
-    .margin({ top: 10 })
-    .height(340) // 增加高度容纳缩放效果
-    .width(700) // 确保宽度填满
+    .width('100%')
+    .height(300)
+    .margin({ top: 20 })
+    .justifyContent(FlexAlign.Center)
+  }
+
+  calculateOffset(target: number) {
+    let left = target - 1;
+    let right = target + 1;
+
+    if (this.isIndexValid(left)) {
+      this.cardsOffset[left] = this.getMaxOffset(left);
+    }
+    if (this.isIndexValid(target)) {
+      this.cardsOffset[target] = this.getMaxOffset(target) / 2;
+    }
+    if (this.isIndexValid(right)) {
+      this.cardsOffset[right] = 0;
+    }
+    if (this.isIndexValid(left)) {
+      this.cardsScale[left] = 0.85; // 左侧卡片缩小
+    }
+    if (this.isIndexValid(target)) {
+      this.cardsScale[target] = 1.0; // 中间卡片正常大小
+    }
+    if (this.isIndexValid(right)) {
+      this.cardsScale[right] = 0.85; // 右侧卡片缩小
+    }
+  }
+
+  isIndexValid(index: number): boolean {
+    return index >= 0 && index < this.cardsList.length;
+  }
+
+  getMaxOffset(index: number): number {
+    return this.displayWidth - Constants.CARD_WIDTH - 2 * this.swiperMargin;
   }
 }
 
+@ReusableV2
 @ComponentV2
-struct CardItem {
-  @Param @Require card: CardInfo
-  @Param @Require index: number // 当前卡片索引
-  @Param @Require currentIndex: number // 居中卡片索引
+struct CardComponent {
+  @Param @Require cardInfo: CardInfo
+  @Local cardWith: number = Constants.CARD_WIDTH;
+  @Local cardHeight: number = Constants.CARD_HEIGHT;
+  @Local buttonSize: number = 50
+  @Local iconSize: number = 25
+  @Local isTablet: boolean = false;
+  @Local screenW: number = this.getUIContext().px2vp(display.getDefaultDisplaySync().width);
+  @Local isPhotoShow: boolean = false;
+  @Param cardOffset: number = 0;
+  @Param showingCard: number = 0;
+  @Param cardIndex: number = 0;
+  @Local buttonMargin: number = 20; // 添加按钮边距变量
+  @Param cardScale: number = 1.0;
 
-  build() {
-    Stack() {
-      Image(this.card.src)
-        .height(300)
-        .width(240)
-        .borderRadius(20)
+  @Monitor('cardScale')
+  oncardSaleChange() {
+    this.cardWith = Constants.CARD_WIDTH * this.cardScale;
+    this.cardHeight = Constants.CARD_HEIGHT * this.cardScale;
+    this.buttonMargin = Constants.CARD_WIDTH * 0.05 * this.cardScale;
+    this.buttonSize = 50 * this.cardScale
+    this.iconSize = 25 * this.cardScale
+  }
 
-      // 播放按钮（仅居中卡片显示）
-      if (this.index === this.currentIndex) {
-        Stack({ alignContent: Alignment.Center }) {
-          Row()
-            .size({ width: 50, height: 50 })
-            .backgroundColor($r('app.color.play_button_background_color'))
-            .borderRadius(15)
-
-          Image($r('app.media.play_card_play'))
-            .size({ width: 25, height: 25 })
-        }
-        .position({
-          x: 150,
-          y: 250
-        })
+  aboutToAppear(): void {
+    if (canIUse('SystemCapability.Window.SessionManager')) {
+      if ((display.isFoldable() && display.getFoldStatus() === display.FoldStatus.FOLD_STATUS_EXPANDED) ||
+        this.screenW >= Constants.DEVICE_SIZE) {
+        this.isTablet = true;
+      } else {
+        this.isTablet = false;
       }
     }
-    .scale({ x: this.index === this.currentIndex ? 1 : 0.85, y: this.index === this.currentIndex ? 1 : 0.85 }) // 应用缩放
-    .zIndex(this.index === this.currentIndex ? 2 : 1) // 居中卡片在上层
-    .animation({ duration: 300, curve: Curve.EaseInOut }) // 平滑动画
+    this.cardWith = Constants.CARD_WIDTH * this.cardScale;
+    this.cardHeight = Constants.CARD_HEIGHT * this.cardScale;
+    this.buttonMargin = Constants.CARD_WIDTH * 0.05 * this.cardScale;
+  }
+
+  build() {
+    Row() {
+      RelativeContainer() {
+        Image(this.cardInfo.src)
+          .id("cardImage")
+          .width(this.cardWith)
+          .height(this.cardHeight)
+          .objectFit(ImageFit.Cover)
+          .borderRadius(30)
+          .shadow({
+            radius: 20,
+            type: ShadowType.COLOR,
+            color: '#1800001e'
+          })
+          .onTouch((event) => {
+            if (event) {
+              if (event.type === TouchType.Down) {
+                this.cardWith = Constants.CARD_WIDTH * 0.9 * this.cardScale;
+                this.cardHeight = Constants.CARD_HEIGHT * 0.9 * this.cardScale;
+                this.buttonSize = 50 * 0.9 * this.cardScale
+                this.iconSize = 25 * 0.9 * this.cardScale
+                this.buttonMargin = this.cardWith * 0.05 * this.cardScale;
+              }
+              if (event.type === TouchType.Up) {
+                this.cardWith = Constants.CARD_WIDTH * this.cardScale;
+                this.cardHeight = Constants.CARD_HEIGHT * this.cardScale;
+                this.buttonSize = 50 * this.cardScale
+                this.iconSize = 25 * this.cardScale
+                this.buttonMargin = Constants.CARD_WIDTH * 0.05 * this.cardScale;
+              }
+            }
+          })
+          .geometryTransition(this.cardIndex.toString(), { follow: true })
+          .transition(TransitionEffect.OPACITY.animation({ duration: Constants.DURATION, curve: Curve.Friction }))
+          .animation({
+            curve: Curve.Friction,
+            duration: Constants.DURATION
+          })
+
+        Stack({ alignContent: Alignment.Center }) {
+          Row()
+            .width(this.buttonSize)
+            .height(this.buttonSize)
+            .backgroundColor($r('app.color.play_button_background_color'))
+            .borderRadius(15)
+            .shadow({
+              radius: 20,
+              type: ShadowType.COLOR,
+              color: '#1800001e'
+            })
+            .geometryTransition(this.cardIndex.toString(), { follow: true })
+            .transition(TransitionEffect.OPACITY.animation({ duration: Constants.DURATION, curve: Curve.Friction }))
+            .animation({
+              curve: Curve.Friction,
+              duration: Constants.DURATION
+            })
+
+          Image($r('app.media.play_card_play'))
+            .width(this.iconSize)
+            .height(this.iconSize)
+            .geometryTransition(this.cardIndex.toString(), { follow: true })
+            .transition(TransitionEffect.OPACITY.animation({ duration: Constants.DURATION, curve: Curve.Friction }))
+            .animation({
+              curve: Curve.Friction,
+              duration: Constants.DURATION
+            })
+        }
+        .id("playButton") // 设置ID用于相对定位
+        .size({ width: this.buttonSize, height: this.buttonSize })
+        .margin({ right: this.buttonMargin, bottom: this.buttonMargin }) // 使用动态边距
+        .transition(TransitionEffect.OPACITY.animation({ duration: Constants.DURATION, curve: Curve.Friction }))
+        .animation({
+          curve: Curve.Friction,
+          duration: Constants.DURATION
+        })
+        // 设置按钮在图片右下角的相对位置
+        .alignRules({
+          right: { anchor: "cardImage", align: HorizontalAlign.End },
+          bottom: { anchor: "cardImage", align: VerticalAlign.Bottom }
+        })
+      }
+      .width(this.cardWith) // 设置容器宽度与图片一致
+      .height(this.cardHeight)
+      .transition(TransitionEffect.OPACITY.animation({ duration: Constants.DURATION, curve: Curve.Friction }))
+      .animation({
+        curve: Curve.Friction,
+        duration: Constants.DURATION
+      })
+      .alignRules({
+        top: { anchor: "__container__", align: VerticalAlign.Center },
+        left: { anchor: "__container__", align: HorizontalAlign.Center },
+        right: { anchor: "__container__", align: HorizontalAlign.Center }
+      })
+    }
+    .width(this.cardWith)
+    .justifyContent(FlexAlign.Center)
   }
 }

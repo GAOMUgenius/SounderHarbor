@@ -25,8 +25,6 @@ export class CardsSource implements IDataSource {
 }
 
 export interface CardInfo {
-  src: string,
-  width: number,
-  height: number,
-  scale: number
+  id: string,
+  src: string
 }

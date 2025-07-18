@@ -6,7 +6,15 @@
     },
     {
       "name": "play_button_background_color",
-      "value": "#f2c7d1"
+      "value": "#C4F2C7D1"
+    },
+    {
+      "name": "tab_title_color",
+      "value": "#325d6d"
+    },
+    {
+      "name": "tab_background_color",
+      "value": "#FFFFFFFF"
     }
   ]
 }

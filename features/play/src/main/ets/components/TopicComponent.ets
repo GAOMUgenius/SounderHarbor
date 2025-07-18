@@ -4,7 +4,7 @@ import { APPConstants } from "datasource"
 export struct TopicComponent {
   build() {
     Row() {
-      Text('Home')
+      Text('Playlists')
         .fontSize(40)
         .fontWeight(FontWeight.Bolder)
         .fontFamily(APPConstants.APPFONTFAMILY)
