@@ -25,7 +25,7 @@ export struct CustomTabBar {
     }
     .backgroundBlurStyle(BlurStyle.NONE)
     .backgroundColor($r('app.color.tab_background_color'))
-    .borderRadius({ topLeft: 25, topRight: 25 })
+    .borderRadius({ topLeft: 35, topRight: 35 })
     .padding({ bottom: 0 })
     .clip(false)
     .height(70)

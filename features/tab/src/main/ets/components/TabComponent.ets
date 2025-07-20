@@ -4,6 +4,7 @@ import { HomePage } from 'home';
 import { PlayPage } from 'play';
 import { TabBarType } from '../model/TabBarType';
 import { CustomTabBar } from './CustomTabBar';
+import { PlayMusicComponent } from './PlayMusicComponent';
 
 @HMRouter({ pageUrl: "TabComponent" })
 @ComponentV2
@@ -31,11 +32,15 @@ export struct TabComponent {
         }
       }
       .layoutWeight(1)
+      .width('100%')
       .barHeight(0)
       .scrollable(false)
       .onChange((index) => {
         this.currentIndex = index;
       })
+
+      PlayMusicComponent()
+
 
       CustomTabBar()
     }

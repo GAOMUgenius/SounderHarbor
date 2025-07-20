@@ -1,6 +1,7 @@
 import Constants from "../constants/Contants"
 import { CardInfo, CardsSource } from "../model/PlayListCardModel"
 import { display } from "@kit.ArkUI"
+import { HMRouter, HMRouterMgr } from "@hadss/hmrouter";
 
 @ComponentV2
 export struct CardSwiperComponent {
@@ -41,7 +42,7 @@ export struct CardSwiperComponent {
             cardIndex: index,
             showingCard: this.currentSwiperIndex
           })
-        }, (item: CardInfo) => JSON.stringify(item))
+        }, (item: CardInfo) => item.id.toString())
       }
       .indicator(false)
       .index(this.currentSwiperIndex)
@@ -148,7 +149,7 @@ export struct CardSwiperComponent {
   }
 }
 
-@ReusableV2
+
 @ComponentV2
 struct CardComponent {
   @Param @Require cardInfo: CardInfo
@@ -284,5 +285,12 @@ struct CardComponent {
     }
     .width(this.cardWith)
     .justifyContent(FlexAlign.Center)
+    .onClick(() => {
+      HMRouterMgr.push({
+        pageUrl: 'PlayingPage',
+        navigationId: 'mainNavigation',
+        param: this.cardInfo.id
+      })
+    })
   }
 }

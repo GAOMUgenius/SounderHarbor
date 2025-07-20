@@ -128,11 +128,10 @@ export struct RecommendComponent {
           .edgeEffect(EdgeEffect.None)
         }
       }
-      .height('100%')
       .alignItems(HorizontalAlign.Start)
       .justifyContent(FlexAlign.Start)
     }
-    .height('auto')
+    .scrollBar(BarState.Off)
   }
 
   @Builder

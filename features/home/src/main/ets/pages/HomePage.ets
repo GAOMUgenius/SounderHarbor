@@ -9,16 +9,14 @@ export struct HomePage {
         TopicComponent()
 
         CategoryTab()
-          .layoutWeight(1)
 
 
       }
       .alignItems(HorizontalAlign.Start)
-      .width('90%')
-      .height('100%')
+      .width('100%')
+      .padding({ left: "5%", right: "5%" })
     }
     .width('100%')
-    .height('100%')
     .justifyContent(FlexAlign.Center)
   }
 }

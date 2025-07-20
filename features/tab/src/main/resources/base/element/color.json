@@ -11,6 +11,10 @@
     {
       "name": "tab_background_color",
       "value": "#FFFFFFFF"
+    },
+    {
+      "name": "play_music_button_color",
+      "value": "#80c2ce"
     }
   ]
 }

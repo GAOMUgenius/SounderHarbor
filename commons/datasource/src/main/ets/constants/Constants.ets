@@ -7,7 +7,8 @@ export class APPConstants {
       id: '1',
       title: '归潮',
       singer: '蔡明希',
-      img: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/87c9654a7b9d0392b3f4615fc6b47ba.jpg'
+      img: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/87c9654a7b9d0392b3f4615fc6b47ba.jpg',
+      url: 'https://agc-storage-drcn.platform.dbankcloud.cn/v0/default-bucket-0ji5c/music%2Fshengdanjie.mp3?token=990c7971-bb6e-4ae2-9483-9332a32f93b1'
     },
     {
       id: '2',

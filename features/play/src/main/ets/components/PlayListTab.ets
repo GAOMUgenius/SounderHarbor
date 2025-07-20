@@ -1,36 +1,41 @@
-import { APPConstants } from "datasource";
+import { APPConstants, MusicData } from "datasource";
 import Constants from "../constants/Contants";
 import { TabBarType, TabBarTypeData } from "../model/TabBarType";
+import { MusicListComponent } from "./MusicListComponent";
 
 @ComponentV2
 export struct PlayListTab {
+  @Local recentMusicList: MusicData[] = []
+  @Local likeMusicList: MusicData[] = []
   @Local currentIndex: TabBarType = TabBarType.RENCENT
-  private indicatorVisible: boolean = true
+  @Local animationMode: AnimationMode = AnimationMode.ACTION_FIRST
+  private controller: TabsController = new TabsController();
+
+  aboutToAppear(): void {
+    this.recentMusicList = APPConstants.MUSICLISTINFO
+    APPConstants.MUSICLISTINFO.forEach((item: MusicData) => {
+      this.recentMusicList.push(item)
+    })
+
+  }
 
   build() {
     RelativeContainer() {
-      Tabs({ index: this.currentIndex }) {
+      Tabs({ index: this.currentIndex, controller: this.controller }) {
         TabContent() {
-          // 第一个标签页内容
-          Text('Recnt')
+          MusicListComponent({ musicList: this.recentMusicList })
         }
-        .tabBar('Recent')
 
         TabContent() {
-          // 第二个标签页内容
-          Text('like')
+          MusicListComponent({ musicList: this.likeMusicList })
         }
-        .tabBar('Like')
       }
+      .height('100%')
       .scrollable(false) // 禁止滑动切换
       .barHeight(0)
       .vertical(true)
       .onChange((index: number) => {
         this.currentIndex = index;
-        this.indicatorVisible = false;
-        setTimeout(() => {
-          this.indicatorVisible = true;
-        }, 10);
       })
 
       // 自定义TabBar
@@ -104,7 +109,8 @@ struct TabItem {
       Text(Constants.TABBARTYPEDATA[this.index].title)
         .fontSize(this.index === this.selectedIndex ? 12 : 10)
         .fontWeight(this.index === this.selectedIndex ? FontWeight.Bold : FontWeight.Medium)
-        .fontColor($r('app.color.app_main_fontcolor'))
+        .fontColor(this.index === this.selectedIndex ? $r('app.color.app_main_fontcolor') :
+        $r('app.color.tab_disselected_color'))
         .fontFamily(APPConstants.APPFONTFAMILY)
         .textAlign(TextAlign.Center)
         .rotate({ angle: -90 })

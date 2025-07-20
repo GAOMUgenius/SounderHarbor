@@ -15,6 +15,18 @@
     {
       "name": "tab_background_color",
       "value": "#FFFFFFFF"
+    },
+    {
+      "name": "tab_disselected_color",
+      "value": "#FF4B6777"
+    },
+    {
+      "name": "back_background_color",
+      "value": "#89bdcc"
+    },
+    {
+      "name": "playing_swiper_indicator_color",
+      "value": "#89bdcc"
     }
   ]
 }

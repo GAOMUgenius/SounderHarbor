@@ -1,11 +1,15 @@
 import { HMDefaultGlobalAnimator, HMNavigation } from '@hadss/hmrouter'
-import { AttributeUpdater, font } from '@kit.ArkUI';
+import { AppStorageV2, AttributeUpdater, font } from '@kit.ArkUI';
 import { APPConstants } from 'datasource';
 
 @Entry
 @ComponentV2
 struct Index {
   modifier: MyNavModifier = new MyNavModifier();
+
+  aboutToAppear(): void {
+
+  }
 
   onPageShow(): void {
     font.registerFont({
@@ -18,7 +22,7 @@ struct Index {
     Column() {
       HMNavigation({
         navigationId: "mainNavigation",
-        homePageUrl: "MainPage",
+        homePageUrl: "TabComponent",
         options: {
           standardAnimator: HMDefaultGlobalAnimator.STANDARD_ANIMATOR,
           dialogAnimator: HMDefaultGlobalAnimator.DIALOG_ANIMATOR,

@@ -1,7 +1,10 @@
-export class CardsSource implements IDataSource {
+import { BasicDataSource } from "datasource";
+
+export class CardsSource extends BasicDataSource {
   private list: CardInfo[] = [];
 
   constructor(list: CardInfo[]) {
+    super();
     this.list = list;
   }
 
@@ -15,12 +18,6 @@ export class CardsSource implements IDataSource {
 
   getList(): CardInfo[] {
     return this.list
-  }
-
-  registerDataChangeListener(): void {
-  }
-
-  unregisterDataChangeListener(): void {
   }
 }
 

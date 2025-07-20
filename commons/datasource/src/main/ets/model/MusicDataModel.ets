@@ -3,4 +3,5 @@ export interface MusicData {
   title: string;
   singer: string;
   img: string;
+  url?:string
 }

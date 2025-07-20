@@ -1,6 +1,7 @@
 // Basic implementation of IDataSource to handle data listener
+@ObservedV2
 export abstract class BasicDataSource implements IDataSource {
- @Track private listeners: DataChangeListener[] = [];
+  @Trace private listeners: DataChangeListener[] = [];
 
   public abstract totalCount(): number
 

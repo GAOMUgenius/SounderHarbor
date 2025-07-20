@@ -57,31 +57,28 @@ export struct CategoryTab {
       Tabs({ barPosition: BarPosition.Start }) {
         TabContent() {
           RecommendComponent()
-            .layoutWeight(1)
+
         }
         .tabBar(this.tabBuilder(CategoryType.RECOMMEND, this.tabArray[0][0]))
 
         TabContent() {
           Text(this.tabArray[1][0])
-            .layoutWeight(1)
         }
         .tabBar(this.tabBuilder(CategoryType.RANKING, this.tabArray[1][0]))
 
         TabContent() {
           Text(this.tabArray[2][0])
-            .layoutWeight(1)
         }
         .tabBar(this.tabBuilder(CategoryType.ALBUM, this.tabArray[2][0]))
 
         TabContent() {
           Text(this.tabArray[3][0])
-            .layoutWeight(1)
         }
         .tabBar(this.tabBuilder(CategoryType.CONCERN, this.tabArray[3][0]))
       }
+      .padding({ bottom: 60 })
       .barHeight(50)
       .width('100%')
-      .layoutWeight(1)
       .edgeEffect(EdgeEffect.None)
       .animationDuration(this.animationDuration)
       .onAreaChange((oldValue: Area, newValue: Area) => {
