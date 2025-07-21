@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { CardInfo } from "../model/PlayListCardModel";
 import { TabBarType, TabBarTypeData } from "../model/TabBarType";
 
 
@@ -26,25 +25,25 @@ export default class Constants {
   /**
    * Card list test case.
    */
-  static readonly CARD_TEST_CASE: CardInfo[] = [
-    {
-      src: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/87c9654a7b9d0392b3f4615fc6b47ba.jpg',
-      id: '1'
-    },
-    {
-      src: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/f6d117e0feee6d0613d47acd72946eb.jpg',
-      id: '2'
-    },
-    {
-      src: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/aa4b8ac29bb3737218d721f63b1c189.jpg',
-      id: '3'
-    },
-    {
-      src: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/780775ec4490bc2a83655fa8f655bc8.jpg',
-      id: '4'
-    }
+  // static readonly CARD_TEST_CASE: CardInfo[] = [
+  //   {
+  //     src: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/87c9654a7b9d0392b3f4615fc6b47ba.jpg',
+  //     id: '1'
+  //   },
+  //   {
+  //     src: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/f6d117e0feee6d0613d47acd72946eb.jpg',
+  //     id: '2'
+  //   },
+  //   {
+  //     src: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/aa4b8ac29bb3737218d721f63b1c189.jpg',
+  //     id: '3'
+  //   },
+  //   {
+  //     src: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/780775ec4490bc2a83655fa8f655bc8.jpg',
+  //     id: '4'
+  //   }
 
-  ];
+  // ];
   /**
    * Swiper's offset.
    */

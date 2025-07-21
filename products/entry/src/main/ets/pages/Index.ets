@@ -1,6 +1,8 @@
 import { HMDefaultGlobalAnimator, HMNavigation } from '@hadss/hmrouter'
 import { AppStorageV2, AttributeUpdater, font } from '@kit.ArkUI';
-import { APPConstants } from 'datasource';
+import { APPConstants, PlayingMusicData, PlayListSource } from 'datasource';
+
+AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())
 
 @Entry
 @ComponentV2

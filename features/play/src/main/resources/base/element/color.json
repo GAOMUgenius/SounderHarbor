@@ -5,6 +5,10 @@
       "value": "#385c70"
     },
     {
+      "name": "play_controll_backcolor",
+      "value": "#FF5D92B0"
+    },
+    {
       "name": "play_button_background_color",
       "value": "#C4F2C7D1"
     },

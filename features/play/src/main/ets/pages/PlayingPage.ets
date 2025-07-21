@@ -1,27 +1,37 @@
 import { HMRouter, HMRouterMgr } from "@hadss/hmrouter";
-import { APPConstants, playingMusicData, PlayingMusicData } from "datasource";
-import { playerManager } from "utils";
+import { APPConstants, MusicData, PlayingMusicData } from "datasource";
+import { numberToTime, playerManager } from "utils";
+import { AudioBarProgress } from "../components/AudioBars";
+import { AppStorageV2 } from "@kit.ArkUI";
 
 @HMRouter({ pageUrl: "PlayingPage" })
 @ComponentV2
 export struct PlayingPage {
-  @Local playingData: PlayingMusicData = playingMusicData
+  @Local playingData: PlayingMusicData =
+    AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())!
   private swiperController1: SwiperController = new SwiperController();
+  @Local audioBars: number[] = []
+  @Local barCount: number = 30
 
   aboutToAppear(): void {
     let index = HMRouterMgr.getCurrentParam() as string;
-
+    let newMusic: MusicData = {
+      id: "",
+      title: "",
+      singer: "",
+      img: "",
+      url: ""
+    }
     APPConstants.MUSICLISTINFO.forEach((item) => {
       if (item.id === index) {
-        this.playingData.id = index
-        this.playingData.title = item.title
-        this.playingData.singer = item.singer
-        this.playingData.img = item.img
-        this.playingData.url = item.url || undefined
-      } else {
-
+        newMusic.id = index
+        newMusic.title = item.title
+        newMusic.singer = item.singer
+        newMusic.img = item.img
+        newMusic.url = item.url || undefined
       }
     })
+    playerManager.singPlay(newMusic)
   }
 
   build() {
@@ -142,13 +152,74 @@ export struct PlayingPage {
       RelativeContainer() {
 
         //背景板
+        Stack() {
+          Row()
+            .border({
+              width: 1,
+              color: Color.Black
+            })
+            .width(315)
+            .height(180)
+            .borderRadius(50)
+            .backgroundColor($r('app.color.play_button_background_color'))
+        }
+        .width(330)
+        .height(200)
+        .alignRules({
+          'top': { 'anchor': 'playConatroll', 'align': VerticalAlign.Center },
+          'left': { 'anchor': 'playConatroll', 'align': HorizontalAlign.Start }
+        })
+        .rotate({
+          angle: 3
+        })
+        .borderRadius(50)
+        .backgroundColor($r('app.color.play_controll_backcolor'))
+        .margin({
+          left: -15,
+          top: 20
+        })
+        .border({
+          width: 1,
+          color: Color.Black
+        })
 
         //播放器
         Column() {
           //TODO 音频频谱控件
-          Row()
-            .width('100%')
-            .height(100)
+          Row() {
+            Text(numberToTime(this.playingData.time))
+              .fontSize(12)
+              .width(40)
+              .fontFamily(APPConstants.APPFONTFAMILY)
+              .textAlign(TextAlign.Center)
+              .fontColor($r('app.color.app_main_fontcolor'))
+            // Slider({
+            //   value: this.playingData.time,
+            //   min: 0,
+            //   max: this.playingData.duration
+            // })
+            //   .onChange((value) => {
+            //     playerManager.seekPlay(value)
+            //   })
+            //   .layoutWeight(1)
+            //   .trackColor("#ccc5c5c5")
+            //   .trackThickness(2)
+            //   .margin({ top: 8, bottom: 8 })
+            //   .layoutWeight(1)
+            AudioBarProgress({
+              currentTime: this.playingData.time,
+              totalDuration: this.playingData.duration
+            })
+            Text(numberToTime(this.playingData.duration))
+              .fontSize(12)
+              .width(40)
+              .fontFamily(APPConstants.APPFONTFAMILY)
+              .textAlign(TextAlign.Center)
+              .fontColor($r('app.color.app_main_fontcolor'))
+          }
+          .width('100%')
+          .height(100)
+
           //控制台
           Row() {
             Image($r('app.media.playing_loop_list'))
@@ -168,7 +239,7 @@ export struct PlayingPage {
                 color: $r('app.color.back_background_color')
               })
               .onClick(() => {
-                playerManager.singPlay(this.playingData)
+                // playerManager.singPlay(this.playingData)
                 this.playingData.isplay = !this.playingData.isplay
               })
             Image($r('app.media.playing_next_music'))
@@ -182,6 +253,7 @@ export struct PlayingPage {
           .justifyContent(FlexAlign.SpaceAround)
           .width("100%")
         }
+        .id('playControll')
         .backgroundColor("#dcebf2")
         .height(250)
         .rotate({

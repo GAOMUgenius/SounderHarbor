@@ -1,4 +1,4 @@
-import { HostMusicData } from "../model/HostMusicModel"
+import { MusicData } from "datasource"
 import { RecommendMusicListData } from "../model/RecommendMusicListModel"
 
 export class Constants {
@@ -7,7 +7,7 @@ export class Constants {
     'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/home_recommend_swiper_02.png',
     'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/home_recommend_swiper_01.png'
   ]
-  static readonly RECOMMEND_HOSTMUSIC_HOSTMUSICDATALISTINFO: HostMusicData[] = [
+  static readonly RECOMMEND_HOSTMUSIC_HOSTMUSICDATALISTINFO: MusicData[] = [
     {
       id: '1',
       title: '归潮',

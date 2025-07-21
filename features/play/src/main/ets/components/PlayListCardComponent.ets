@@ -1,17 +1,24 @@
 import Constants from "../constants/Contants"
-import { CardInfo, CardsSource } from "../model/PlayListCardModel"
-import { display } from "@kit.ArkUI"
-import { HMRouter, HMRouterMgr } from "@hadss/hmrouter";
+import { AppStorageV2, display } from "@kit.ArkUI"
+import { HMRouterMgr } from "@hadss/hmrouter";
+import { APPConstants, MusicData, PlayingMusicData, PlayListSource } from "datasource";
 
 @ComponentV2
 export struct CardSwiperComponent {
-  @Local cardsList: CardInfo[] = [];
+  @Local cardsList: MusicData[] = []
   @Local cardsOffset: number[] = [];
-  @Local currentSwiperIndex: number = 0;
+  @Local currentSwiperIndex: number = 0
   @Local cardsScale: number[] = [];
-  private data: CardsSource = new CardsSource([]);
+  @Local data: PlayListSource = new PlayListSource([]);
   private displayWidth: number = 0;
   private swiperMargin: number = Constants.SWIPER_MARGIN;
+  @Local playingMusicList: PlayingMusicData =
+    AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())!
+
+  @Monitor('playingMusicList')
+  onListChange() {
+    console.log('播放列表发生变化了')
+  }
 
   aboutToAppear(): void {
     const displayData: display.Display = display.getDefaultDisplaySync();
@@ -22,19 +29,20 @@ export struct CardSwiperComponent {
         this.displayWidth = this.getUIContext().px2vp(displayData.width) / 2;
       }
     }
-    Constants.CARD_TEST_CASE.forEach((item) => {
+
+    this.playingMusicList.playList.forEach((item) => {
       this.cardsList.push(item);
       this.cardsOffset.push(0);
       this.cardsScale.push(1.0);
     })
-    this.data = new CardsSource(this.cardsList);
+    this.data = new PlayListSource(this.cardsList);
     this.calculateOffset(0);
   }
 
   build() {
     Column() {
       Swiper() {
-        LazyForEach(this.data, (item: CardInfo, index: number) => {
+        LazyForEach(this.data, (item: MusicData, index: number) => {
           CardComponent({
             cardInfo: item,
             cardOffset: this.cardsOffset[index],
@@ -42,7 +50,7 @@ export struct CardSwiperComponent {
             cardIndex: index,
             showingCard: this.currentSwiperIndex
           })
-        }, (item: CardInfo) => item.id.toString())
+        }, (item: MusicData) => item.id.toString())
       }
       .indicator(false)
       .index(this.currentSwiperIndex)
@@ -152,7 +160,7 @@ export struct CardSwiperComponent {
 
 @ComponentV2
 struct CardComponent {
-  @Param @Require cardInfo: CardInfo
+  @Param @Require cardInfo: MusicData
   @Local cardWith: number = Constants.CARD_WIDTH;
   @Local cardHeight: number = Constants.CARD_HEIGHT;
   @Local buttonSize: number = 50
@@ -192,7 +200,7 @@ struct CardComponent {
   build() {
     Row() {
       RelativeContainer() {
-        Image(this.cardInfo.src)
+        Image(this.cardInfo.img)
           .id("cardImage")
           .width(this.cardWith)
           .height(this.cardHeight)

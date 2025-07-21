@@ -1,3 +1,4 @@
+import { HMRouterMgr } from "@hadss/hmrouter"
 import { APPConstants, MusicData } from "datasource"
 import { MusicListSource } from "../model/MusicListSource"
 
@@ -74,6 +75,13 @@ struct MusicListItem {
           this.itemBackGroundColor = '#00000000'
         }
       }
+    })
+    .onClick(() => {
+      HMRouterMgr.push({
+        pageUrl: 'PlayingPage',
+        navigationId: 'mainNavigation',
+        param: this.musicData.id
+      })
     })
   }
 }

@@ -1,9 +1,9 @@
 import { SwiperDataSource } from "../model/SwiperDataSource";
 import { LengthMetrics } from "@kit.ArkUI";
 import { Constants } from "../constants/Constants";
-import { HostMusicData } from "../model/HostMusicModel";
-import { APPConstants } from "datasource";
+import { APPConstants, MusicData } from "datasource";
 import { RecommendMusicListData } from "../model/RecommendMusicListModel";
+import { HMNavigation, HMRouterMgr } from "@hadss/hmrouter";
 
 
 @ComponentV2
@@ -18,7 +18,7 @@ export struct RecommendComponent {
   private swiperController1: SwiperController = new SwiperController();
   private swiperBannerData: SwiperDataSource = new SwiperDataSource([]);
   //热门推荐歌曲区域变量
-  private hostMusicData: HostMusicData[] = []
+  private hostMusicData: MusicData[] = []
   //推荐歌单区域变量
   private recommendMusicListData: RecommendMusicListData[] = []
 
@@ -83,11 +83,11 @@ export struct RecommendComponent {
 
           //热门歌曲区域
           List() {
-            ForEach(this.hostMusicData, (item: HostMusicData) => {
+            ForEach(this.hostMusicData, (item: MusicData) => {
               ListItem() {
                 this.HostMusicItem(item)
               }
-            }, (item: HostMusicData) => item.id)
+            }, (item: MusicData) => item.id)
           }
           .scrollBar(BarState.Off)
           .margin({ top: 20 })
@@ -135,7 +135,7 @@ export struct RecommendComponent {
   }
 
   @Builder
-  HostMusicItem(hostMusic: HostMusicData) {
+  HostMusicItem(hostMusic: MusicData) {
     Column() {
       Image(hostMusic.img)
         .width(100)
@@ -156,6 +156,13 @@ export struct RecommendComponent {
     }
     .margin({ right: 5, left: 5 })
     .justifyContent(FlexAlign.Start)
+    .onClick(() => {
+      HMRouterMgr.push({
+        pageUrl: 'PlayingPage',
+        navigationId: 'mainNavigation',
+        param: hostMusic.id
+      })
+    })
   }
 
   @Builder
