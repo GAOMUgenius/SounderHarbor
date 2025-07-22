@@ -1,24 +1,27 @@
 import Constants from "../constants/Contants"
 import { AppStorageV2, display } from "@kit.ArkUI"
 import { HMRouterMgr } from "@hadss/hmrouter";
-import { APPConstants, MusicData, PlayingMusicData, PlayListSource } from "datasource";
+import { APPConstants, MusicData, PlayingMusicData, PlaylistChangeEventData, PlayListSource } from "datasource";
+import { emitter } from "@kit.BasicServicesKit";
 
 @ComponentV2
 export struct CardSwiperComponent {
-  @Local cardsList: MusicData[] = []
   @Local cardsOffset: number[] = [];
   @Local currentSwiperIndex: number = 0
   @Local cardsScale: number[] = [];
-  @Local data: PlayListSource = new PlayListSource([]);
+  @Local data: PlayListSource =
+    AppStorageV2.connect(PlayListSource, APPConstants.PLAYLISTMUSIC, () => new PlayListSource([]))!
   private displayWidth: number = 0;
   private swiperMargin: number = Constants.SWIPER_MARGIN;
   @Local playingMusicList: PlayingMusicData =
     AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())!
-
-  @Monitor('playingMusicList')
-  onListChange() {
-    console.log('播放列表发生变化了')
-  }
+  // 添加事件回调引用
+  private dataChangeCallback?: (eventData: emitter.EventData) => void;
+  // 定义事件对象
+  private playlistEvent: emitter.InnerEvent = {
+    eventId: APPConstants.PLAYLIST_CHANGED_EVENT_ID,
+    priority: emitter.EventPriority.LOW
+  };
 
   aboutToAppear(): void {
     const displayData: display.Display = display.getDefaultDisplaySync();
@@ -31,27 +34,79 @@ export struct CardSwiperComponent {
     }
 
     this.playingMusicList.playList.forEach((item) => {
-      this.cardsList.push(item);
       this.cardsOffset.push(0);
       this.cardsScale.push(1.0);
     })
-    this.data = new PlayListSource(this.cardsList);
     this.calculateOffset(0);
+
+    // 注册数据变化监听器
+    this.dataChangeCallback = (eventData: emitter.EventData) => {
+
+      const data = eventData.data as PlaylistChangeEventData;
+
+      const action: 'add' | 'remove' = data.action;
+      const item: MusicData = data.item;
+      const totalCount: number = data.totalCount;
+
+      if (action && item && totalCount !== undefined) {
+        this.handleDataChange(action, item, totalCount);
+      }
+    };
+
+    emitter.on(this.playlistEvent, this.dataChangeCallback);
+  }
+
+  aboutToDisappear(): void {
+    // 取消注册数据变化监听器
+    if (this.dataChangeCallback) {
+      emitter.off(APPConstants.PLAYLIST_CHANGED_EVENT_ID);
+    }
+  }
+
+  // 处理数据变化事件
+  private handleDataChange(action: string, item: MusicData, totalCount: number) {
+    switch (action) {
+      case "add":
+        this.cardsOffset.unshift(0)
+        this.cardsScale.unshift(0.85)
+        this.currentSwiperIndex = 0
+        this.calculateOffset(this.currentSwiperIndex)
+        break;
+
+      case "remove":
+        const removeIndex = this.data.getList().findIndex(i => i.id === item.id);
+        if (removeIndex !== -1) {
+          // 移除对应项的状态
+          this.cardsOffset.splice(removeIndex, 1);
+          this.cardsScale.splice(removeIndex, 1);
+
+          // 调整当前索引（如果移除的是当前项）
+          if (removeIndex === this.currentSwiperIndex) {
+            this.currentSwiperIndex = Math.max(0, this.currentSwiperIndex - 1);
+          } else if (removeIndex < this.currentSwiperIndex) {
+            this.currentSwiperIndex -= 1;
+          }
+        }
+        break;
+    }
+
   }
 
   build() {
     Column() {
       Swiper() {
-        LazyForEach(this.data, (item: MusicData, index: number) => {
+        LazyForEach(this.data, (item: MusicData) => {
           CardComponent({
             cardInfo: item,
-            cardOffset: this.cardsOffset[index],
-            cardScale: this.cardsScale[index],
-            cardIndex: index,
-            showingCard: this.currentSwiperIndex
+            cardScale: this.cardsScale[this.data.getIndex(item.id)],
+            totalCount: this.cardsScale.length,
+            cardIndex: this.data.getIndex(item.id),
           })
         }, (item: MusicData) => item.id.toString())
       }
+      .onClick(() => {
+        console.log('cardscale' + this.cardsScale)
+      })
       .indicator(false)
       .index(this.currentSwiperIndex)
       .loop(false)
@@ -64,6 +119,9 @@ export struct CardSwiperComponent {
         this.currentSwiperIndex = index;
       })
       .onGestureSwipe((index, event) => {
+        if (!this.isIndexValid(index)) {
+          return;
+        }
         const currentOffset = event.currentOffset;
         const maxOffset = this.getMaxOffset(index) / 2;
         const progress = Math.min(1, Math.abs(currentOffset) / this.displayWidth);
@@ -104,8 +162,11 @@ export struct CardSwiperComponent {
         }
       })
       .onAnimationStart((_index, targetIndex) => {
+        if (!this.isIndexValid(targetIndex)) {
+          return;
+        }
         // 只重置非相邻卡片的缩放
-        this.cardsList.forEach((_, i) => {
+        this.data.getList().forEach((_, i) => {
           if (Math.abs(i - targetIndex) > 1) {
             this.cardsScale[i] = 0.85;
           }
@@ -125,31 +186,30 @@ export struct CardSwiperComponent {
   }
 
   calculateOffset(target: number) {
-    let left = target - 1;
-    let right = target + 1;
+    const prev = target - 1;
+    const next = target + 1;
 
-    if (this.isIndexValid(left)) {
-      this.cardsOffset[left] = this.getMaxOffset(left);
-    }
+    // 更新当前卡片
     if (this.isIndexValid(target)) {
       this.cardsOffset[target] = this.getMaxOffset(target) / 2;
+      this.cardsScale[target] = 1.0;
     }
-    if (this.isIndexValid(right)) {
-      this.cardsOffset[right] = 0;
+
+    // 更新左侧卡片
+    if (this.isIndexValid(prev)) {
+      this.cardsOffset[prev] = this.getMaxOffset(prev);
+      this.cardsScale[prev] = 0.85;
     }
-    if (this.isIndexValid(left)) {
-      this.cardsScale[left] = 0.85; // 左侧卡片缩小
-    }
-    if (this.isIndexValid(target)) {
-      this.cardsScale[target] = 1.0; // 中间卡片正常大小
-    }
-    if (this.isIndexValid(right)) {
-      this.cardsScale[right] = 0.85; // 右侧卡片缩小
+
+    // 更新右侧卡片
+    if (this.isIndexValid(next)) {
+      this.cardsOffset[next] = 0;
+      this.cardsScale[next] = 0.85;
     }
   }
 
   isIndexValid(index: number): boolean {
-    return index >= 0 && index < this.cardsList.length;
+    return index >= 0 && index < this.data.totalCount();
   }
 
   getMaxOffset(index: number): number {
@@ -168,19 +228,20 @@ struct CardComponent {
   @Local isTablet: boolean = false;
   @Local screenW: number = this.getUIContext().px2vp(display.getDefaultDisplaySync().width);
   @Local isPhotoShow: boolean = false;
-  @Param cardOffset: number = 0;
-  @Param showingCard: number = 0;
   @Param cardIndex: number = 0;
   @Local buttonMargin: number = 20; // 添加按钮边距变量
-  @Param cardScale: number = 1.0;
+  @Param cardScale: number = 0.85
+  @Param totalCount: number = 0
 
-  @Monitor('cardScale')
+  @Monitor('cardScale', 'totalCount')
   oncardSaleChange() {
-    this.cardWith = Constants.CARD_WIDTH * this.cardScale;
-    this.cardHeight = Constants.CARD_HEIGHT * this.cardScale;
-    this.buttonMargin = Constants.CARD_WIDTH * 0.05 * this.cardScale;
+    this.cardWith = Constants.CARD_WIDTH * this.cardScale
+    this.cardHeight = Constants.CARD_HEIGHT * this.cardScale
+    this.buttonMargin = Constants.CARD_WIDTH * 0.05 * this.cardScale
     this.buttonSize = 50 * this.cardScale
     this.iconSize = 25 * this.cardScale
+    console.log('cardwidth' + 'id' + this.cardInfo.id + ' width' + this.cardWith + ' scale' + this.cardScale +
+      ' totalCount' + this.totalCount + ' index' + this.cardIndex)
   }
 
   aboutToAppear(): void {
@@ -192,9 +253,9 @@ struct CardComponent {
         this.isTablet = false;
       }
     }
-    this.cardWith = Constants.CARD_WIDTH * this.cardScale;
-    this.cardHeight = Constants.CARD_HEIGHT * this.cardScale;
-    this.buttonMargin = Constants.CARD_WIDTH * 0.05 * this.cardScale;
+    this.cardWith = Constants.CARD_WIDTH * this.cardScale
+    this.cardHeight = Constants.CARD_HEIGHT * this.cardScale
+    this.buttonMargin = Constants.CARD_WIDTH * 0.05 * this.cardScale
   }
 
   build() {
@@ -214,18 +275,18 @@ struct CardComponent {
           .onTouch((event) => {
             if (event) {
               if (event.type === TouchType.Down) {
-                this.cardWith = Constants.CARD_WIDTH * 0.9 * this.cardScale;
-                this.cardHeight = Constants.CARD_HEIGHT * 0.9 * this.cardScale;
+                this.cardWith = Constants.CARD_WIDTH * 0.9 * this.cardScale
+                this.cardHeight = Constants.CARD_HEIGHT * 0.9 * this.cardScale
                 this.buttonSize = 50 * 0.9 * this.cardScale
                 this.iconSize = 25 * 0.9 * this.cardScale
-                this.buttonMargin = this.cardWith * 0.05 * this.cardScale;
+                this.buttonMargin = this.cardWith * 0.05 * this.cardScale
               }
               if (event.type === TouchType.Up) {
-                this.cardWith = Constants.CARD_WIDTH * this.cardScale;
-                this.cardHeight = Constants.CARD_HEIGHT * this.cardScale;
+                this.cardWith = Constants.CARD_WIDTH * this.cardScale
+                this.cardHeight = Constants.CARD_HEIGHT * this.cardScale
                 this.buttonSize = 50 * this.cardScale
                 this.iconSize = 25 * this.cardScale
-                this.buttonMargin = Constants.CARD_WIDTH * 0.05 * this.cardScale;
+                this.buttonMargin = Constants.CARD_WIDTH * 0.05 * this.cardScale
               }
             }
           })

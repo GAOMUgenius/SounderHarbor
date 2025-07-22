@@ -39,7 +39,9 @@ export struct TabComponent {
         this.currentIndex = index;
       })
 
-      PlayMusicComponent()
+
+        PlayMusicComponent()
+
 
 
       CustomTabBar()

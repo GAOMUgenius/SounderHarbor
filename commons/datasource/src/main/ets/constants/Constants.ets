@@ -36,4 +36,5 @@ export class APPConstants {
   ]
   static readonly GLOBALMUSIC: 'globalmusic'
   static readonly PLAYLISTMUSIC: 'playlistmusic'
+  static readonly PLAYLIST_CHANGED_EVENT_ID = 1001;
 }

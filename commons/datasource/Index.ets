@@ -8,4 +8,4 @@ export { MusicListData } from './src/main/ets/model/MusicListModel'
 
 export { PlayingMusicData } from './src/main/ets/model/PlayingMusicData'
 
-export { PlayListSource } from './src/main/ets/model/PlayListSource'
+export { PlayListSource, PlaylistChangeEventData } from './src/main/ets/model/PlayListSource'

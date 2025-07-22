@@ -1,5 +1,5 @@
 import { media } from '@kit.MediaKit'
-import { APPConstants, MusicData, PlayingMusicData } from 'datasource'
+import { APPConstants, MusicData, PlayingMusicData, PlayListSource } from 'datasource'
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { resourceManager } from '@kit.LocalizationKit';
@@ -12,6 +12,8 @@ class AvPlayManager {
   private context: common.ApplicationContext | undefined = undefined;
   private currentSong: PlayingMusicData =
     AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())!
+  private playingListSource: PlayListSource =
+    AppStorageV2.connect(PlayListSource, APPConstants.PLAYLISTMUSIC, () => new PlayListSource([]))!
 
   //定义方法 创建播放器 + 监听播放器的状态变化
   async init() {
@@ -58,7 +60,9 @@ class AvPlayManager {
       this.currentSong.playIndex = 0
       //切换歌曲
       this.changeSong()
+      this.playingListSource.addMusic(song)
     }
+
   }
 
   //切换歌曲

@@ -3,6 +3,7 @@ import { AppStorageV2, AttributeUpdater, font } from '@kit.ArkUI';
 import { APPConstants, PlayingMusicData, PlayListSource } from 'datasource';
 
 AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())
+AppStorageV2.connect(PlayListSource, APPConstants.PLAYLISTMUSIC, () => new PlayListSource([]))
 
 @Entry
 @ComponentV2
