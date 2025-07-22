@@ -3,6 +3,7 @@ import { APPConstants, MusicData, PlayingMusicData, PlayListSource } from "datas
 import { numberToTime, playerManager } from "utils";
 import { AudioBarProgress } from "../components/AudioBars";
 import { AppStorageV2 } from "@kit.ArkUI";
+import Constants from "../constants/Contants";
 
 @HMRouter({ pageUrl: "PlayingPage" })
 @ComponentV2
@@ -15,6 +16,22 @@ export struct PlayingPage {
   @Local audioBars: number[] = []
   @Local barCount: number = 30
   @Local isShow: boolean = false;
+  @Local imgStart: number = 0
+
+  @Monitor('playingData.time')
+  onTimeChange() {
+    this.imgStart = this.calculateRotationAngle()
+  }
+
+  // 计算当前应该旋转的角度
+  private calculateRotationAngle(): number {
+    // 确保duration不为0，避免除零错误
+    if (this.playingData.duration <= 0) {
+      return 0;
+    }
+    // 根据播放进度计算角度 (time/duration) * 360°
+    return (this.playingData.time / this.playingData.duration) * 360 * 3;
+  }
 
   aboutToAppear(): void {
     let index = HMRouterMgr.getCurrentParam() as string;
@@ -355,16 +372,31 @@ export struct PlayingPage {
   @Builder
   MusicList() {
     Column() {
-      Image(this.playingData.img)
-        .width(150)
-        .height(150)
-        .borderRadius(75)
-        .shadow({
-          radius: 10,
-          color: '#ffe7e2e4',
-          offsetX: 30,
-          offsetY: 30
-        })
+      Row() {
+        Image(this.playingData.img)
+          .width(150)
+          .height(150)
+          .borderRadius(75)
+          .rotate({
+            x: 0,
+            y: 0,
+            z: 1,
+            angle: this.imgStart
+          })
+          .transition(TransitionEffect.OPACITY.animation({ duration: Constants.DURATION, curve: Curve.Friction }))
+          .animation({
+            curve: Curve.Friction,
+            duration: Constants.DURATION
+          })
+      }
+      .borderRadius(75)
+      .shadow({
+        radius: 10,
+        color: '#ffe7e2e4',
+        offsetX: 30,
+        offsetY: 30
+      })
+
       Text(this.playingData.singer)
         .fontFamily(APPConstants.APPFONTFAMILY)
         .fontColor($r('app.color.app_main_fontcolor'))
@@ -436,6 +468,9 @@ export struct PlayingPage {
                 })
                 .backgroundColor($r('sys.color.white'))
             }
+            .onClick(() => {
+              playerManager.singPlay(item)
+            })
             .alignItems(VerticalAlign.Center)
             .height(70)
             .padding({ left: '5%', right: '5%' })

@@ -32,6 +32,28 @@ export class APPConstants {
       singer: '要不要买菜',
       img: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/780775ec4490bc2a83655fa8f655bc8.jpg',
       url: 'youxinglaiguo.mp3'
+    },
+    {
+      id: '5',
+      title: '隆里电丝(LIVE版)',
+      singer: '盛宇D-SHINE',
+      img: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/babcd0d781adc2cd9bd4daeb4a963a5.jpg',
+      url: 'lonydance.mp3'
+    },
+    {
+      id: '6',
+      title: '第一天',
+      singer: '孙燕姿',
+      img: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/3b428920af2759d65a358d89a28ce17.jpg',
+      url: 'diyitian.mp3'
+    },
+
+    {
+      id: '7',
+      title: '天黑黑',
+      singer: '孙燕姿',
+      img: 'https://gitee.com/gomugenius/SoundHarbor_Picture/raw/master/img/52f65002adfcf1226bbfa3f64522861.jpg',
+      url: 'tianheihei.mp3'
     }
   ]
   static readonly GLOBALMUSIC: 'globalmusic'

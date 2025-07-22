@@ -7,6 +7,23 @@ import { HMRouterMgr } from "@hadss/hmrouter";
 export struct PlayMusicComponent {
   @Local playingMusic: PlayingMusicData =
     AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())!
+  @Local imgStart: number = 0
+
+  @Monitor('playingMusic.time')
+  onTimeChange() {
+    this.imgStart = this.calculateRotationAngle()
+  }
+
+  // 计算当前应该旋转的角度
+  private calculateRotationAngle(): number {
+    // 确保duration不为0，避免除零错误
+    if (this.playingMusic.duration <= 0) {
+      return 0;
+    }
+
+    // 根据播放进度计算角度 (time/duration) * 360°
+    return (this.playingMusic.time / this.playingMusic.duration) * 360 * 3;
+  }
 
   build() {
     Row() {
@@ -20,6 +37,25 @@ export struct PlayMusicComponent {
           .border({
             width: 1,
             color: Color.White
+          })
+          .rotate({
+            x: 0,
+            y: 0,
+            z: 1,
+            angle: this.imgStart
+          })
+          // .onAppear(() => {
+          //   setInterval(() => {
+          //     this.imgStart += 1
+          //     if (this.imgStart > 360) {
+          //       this.imgStart = 0
+          //     }
+          //   }, 125)
+          // })
+          .transition(TransitionEffect.OPACITY.animation({ duration: 280, curve: Curve.Friction }))
+          .animation({
+            curve: Curve.Friction,
+            duration: 280
           })
 
         Row()
