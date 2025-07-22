@@ -3,6 +3,7 @@ import { AppStorageV2, display } from "@kit.ArkUI"
 import { HMRouterMgr } from "@hadss/hmrouter";
 import { APPConstants, MusicData, PlayingMusicData, PlaylistChangeEventData, PlayListSource } from "datasource";
 import { emitter } from "@kit.BasicServicesKit";
+import { playerManager } from 'utils'
 
 @ComponentV2
 export struct CardSwiperComponent {
@@ -232,6 +233,8 @@ struct CardComponent {
   @Local buttonMargin: number = 20; // 添加按钮边距变量
   @Param cardScale: number = 0.85
   @Param totalCount: number = 0
+  @Local playingMusicList: PlayingMusicData =
+    AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())!
 
   @Monitor('cardScale', 'totalCount')
   oncardSaleChange() {
@@ -315,7 +318,8 @@ struct CardComponent {
               duration: Constants.DURATION
             })
 
-          Image($r('app.media.play_card_play'))
+          Image(this.playingMusicList.id === this.cardInfo.id ? $r('app.media.play_card_zanting') :
+          $r('app.media.play_card_play'))
             .width(this.iconSize)
             .height(this.iconSize)
             .geometryTransition(this.cardIndex.toString(), { follow: true })
@@ -324,6 +328,11 @@ struct CardComponent {
               curve: Curve.Friction,
               duration: Constants.DURATION
             })
+            .onClick(() => {
+              this.playingMusicList.isplay ? playerManager.paused() :
+              playerManager.singPlay(this.playingMusicList.playList[this.playingMusicList.playIndex])
+            })
+
         }
         .id("playButton") // 设置ID用于相对定位
         .size({ width: this.buttonSize, height: this.buttonSize })

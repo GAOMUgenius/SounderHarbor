@@ -26,6 +26,9 @@ class AvPlayManager {
         this.player?.prepare()
       } else if (state === 'prepared') {
         this.player?.play()
+        this.currentSong.isplay = true
+      } else if (state === 'completed') {
+        this.nextPlay(true)
       }
     })
 
@@ -41,13 +44,14 @@ class AvPlayManager {
   //播放歌曲 → 设置播放资源
 
   singPlay(song: MusicData) {
-
     //是否在列表
+    this.currentSong.id = song.id
     const inList = this.currentSong.playList.some(item => item.id === song.id)
     if (inList) {
       //在列表里面
-      if (this.currentSong.id === song.id) {
+      if (this.currentSong.url === song.url) {
         this.player?.play()
+        this.currentSong.isplay = true
       } else {
         //设置新的索引切歌
         this.currentSong.playIndex = this.currentSong.playList.findIndex(item => item.id === song.id)
@@ -62,7 +66,6 @@ class AvPlayManager {
       this.changeSong()
       this.playingListSource.addMusic(song)
     }
-
   }
 
   //切换歌曲
@@ -99,6 +102,52 @@ class AvPlayManager {
   //跳转进度
   seekPlay(value: number) {
     this.player?.seek(value)
+  }
+
+  //暂停
+  paused() {
+    this.player?.pause()
+    this.currentSong.isplay = false
+  }
+
+  //上一首
+  prevPlay() {
+    if (this.currentSong.playMode === 'radom') {
+      //随机
+      this.currentSong.playIndex = Math.floor(Math.random() * this.currentSong.playList.length)
+
+    } else {
+      this.currentSong.playIndex--
+      if (this.currentSong.playIndex < 0) {
+        //去最后一首歌
+        this.currentSong.playIndex = this.currentSong.playList.length - 1
+      }
+    }
+    this.singPlay(this.currentSong.playList[this.currentSong.playIndex])
+  }
+
+  //下一首: 根据播放模式计算索引
+  //真的重复播放 播放模式为single 并且播放器自动下一首  completed  传入一个参数表示是自动的
+  //随机 计算随机索引
+  //列表 ++
+  nextPlay(auto?: boolean) {
+    if (this.currentSong.playMode === 'single' && auto) {
+      //真的重复 索引不变
+      this.currentSong.playIndex = this.currentSong.playIndex
+
+    } else if (this.currentSong.playMode === 'radom') {
+      //随机
+      this.currentSong.playIndex = Math.floor(Math.random() * this.currentSong.playList.length)
+    } else {
+      //列表
+      this.currentSong.playIndex++
+      if (this.currentSong.playIndex > this.currentSong.playList.length - 1) {
+        //去第一首歌
+        this.currentSong.playIndex = 0
+      }
+    }
+
+    this.singPlay(this.currentSong.playList[this.currentSong.playIndex])
   }
 }
 

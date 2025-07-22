@@ -185,34 +185,21 @@ export struct PlayingPage {
 
         //播放器
         Column() {
-          //TODO 音频频谱控件
+          //
           Row() {
             Text(numberToTime(this.playingData.time))
               .fontSize(12)
-              .width(40)
+              .width(60)
               .fontFamily(APPConstants.APPFONTFAMILY)
               .textAlign(TextAlign.Center)
               .fontColor($r('app.color.app_main_fontcolor'))
-            // Slider({
-            //   value: this.playingData.time,
-            //   min: 0,
-            //   max: this.playingData.duration
-            // })
-            //   .onChange((value) => {
-            //     playerManager.seekPlay(value)
-            //   })
-            //   .layoutWeight(1)
-            //   .trackColor("#ccc5c5c5")
-            //   .trackThickness(2)
-            //   .margin({ top: 8, bottom: 8 })
-            //   .layoutWeight(1)
             AudioBarProgress({
               currentTime: this.playingData.time,
               totalDuration: this.playingData.duration
             })
             Text(numberToTime(this.playingData.duration))
               .fontSize(12)
-              .width(40)
+              .width(60)
               .fontFamily(APPConstants.APPFONTFAMILY)
               .textAlign(TextAlign.Center)
               .fontColor($r('app.color.app_main_fontcolor'))
@@ -222,12 +209,35 @@ export struct PlayingPage {
 
           //控制台
           Row() {
-            Image($r('app.media.playing_loop_list'))
-              .width(30)
-              .height(30)
+            //播放模式
+            if (this.playingData.playMode === 'loop') {
+              Image($r('app.media.playing_loop_list'))
+                .width(30)
+                .height(30)
+                .onClick(() => {
+                  this.playingData.playMode = 'radom'
+                })
+            } else if (this.playingData.playMode === 'radom') {
+              Image($r('app.media.playing_radom_list'))
+                .width(30)
+                .height(30)
+                .onClick(() => {
+                  this.playingData.playMode = 'single'
+                })
+            } else if (this.playingData.playMode === 'single') {
+              Image($r('app.media.playing_single_list'))
+                .width(30)
+                .height(30)
+                .onClick(() => {
+                  this.playingData.playMode = 'loop'
+                })
+            }
             Image($r('app.media.playing_pre_music'))
               .width(30)
               .height(30)
+              .onClick(() => {
+                playerManager.prevPlay()
+              })
             Image(this.playingData.isplay ? $r('app.media.play_card_zanting') : $r('app.media.play_card_play'))
               .width(70)
               .height(70)
@@ -239,15 +249,22 @@ export struct PlayingPage {
                 color: $r('app.color.back_background_color')
               })
               .onClick(() => {
-                // playerManager.singPlay(this.playingData)
-                this.playingData.isplay = !this.playingData.isplay
+                this.playingData.isplay ? playerManager.paused() :
+                playerManager.singPlay(this.playingData.playList[this.playingData.playIndex])
               })
             Image($r('app.media.playing_next_music'))
               .width(30)
               .height(30)
+              .onClick(() => {
+                playerManager.nextPlay()
+              })
             Image($r('app.media.playing_play_list'))
               .width(30)
               .height(30)
+              .onClick(() => {
+
+              })
+
 
           }
           .justifyContent(FlexAlign.SpaceAround)

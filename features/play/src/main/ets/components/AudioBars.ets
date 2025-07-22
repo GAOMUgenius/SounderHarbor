@@ -41,7 +41,7 @@ export struct AudioBarProgress {
       ForEach(this.audioBars, (height: number, index: number) => {
         // 柱子样式：当前进度前的柱子用高亮色，之后用默认色
         Column()
-          .width(5) // 平均分配宽度（100% / barCount）
+          .width(4) // 平均分配宽度（100% / barCount）
           .height(`${height * 100}%`) // 高度由音频数据决定（0-100%）
           .backgroundColor(index <= getCurrentBarIndex(this.currentTime, this.totalDuration, this.barCount) ?
             '#C4F2C7D1' : '#CCCCCC')

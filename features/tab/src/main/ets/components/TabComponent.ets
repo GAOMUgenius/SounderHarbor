@@ -1,16 +1,20 @@
 import { HMParamType, HMRouter } from '@hadss/hmrouter'
+import { APPConstants, PlayingMusicData } from 'datasource';
 import { DiscoveryPage } from 'discovery';
 import { HomePage } from 'home';
 import { PlayPage } from 'play';
 import { TabBarType } from '../model/TabBarType';
 import { CustomTabBar } from './CustomTabBar';
 import { PlayMusicComponent } from './PlayMusicComponent';
+import { AppStorageV2, curves } from '@kit.ArkUI';
 
 @HMRouter({ pageUrl: "TabComponent" })
 @ComponentV2
 export struct TabComponent {
   @Local param: HMParamType | null = null;
   @Provider('currentIndex') currentIndex: TabBarType = TabBarType.HOME
+  @Local playingData: PlayingMusicData =
+    AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())!
 
   build() {
     Flex({ direction: FlexDirection.Column }) {
@@ -40,8 +44,12 @@ export struct TabComponent {
       })
 
 
+      if (this.playingData.playList.length !== 0) {
         PlayMusicComponent()
-
+          .transition(TransitionEffect.OPACITY.animation({
+            curve: curves.springMotion(0.6, 0.8)
+          }))
+      }
 
 
       CustomTabBar()

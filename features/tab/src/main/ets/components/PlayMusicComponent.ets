@@ -1,5 +1,7 @@
 import { APPConstants, PlayingMusicData } from "datasource";
 import { AppStorageV2 } from "@kit.ArkUI";
+import { playerManager } from "utils";
+import { HMRouterMgr } from "@hadss/hmrouter";
 
 @ComponentV2
 export struct PlayMusicComponent {
@@ -54,13 +56,17 @@ export struct PlayMusicComponent {
         .margin({ right: 15, top: 17.5 })
 
 
-      Image($r('app.media.playing_card_zanting'))
+      Image(this.playingMusic.isplay ? $r('app.media.playing_card_zanting') : $r('app.media.playing_component_play'))
         .width(35)
         .height(35)
         .padding(10)
         .backgroundColor(Color.White)
         .borderRadius(10)
         .margin({ right: 20, top: 10 })
+        .onClick(() => {
+          this.playingMusic.isplay ? playerManager.paused() :
+          playerManager.singPlay(this.playingMusic.playList[this.playingMusic.playIndex])
+        })
 
     }
     .height(100)
@@ -70,5 +76,12 @@ export struct PlayMusicComponent {
     .margin({ bottom: -25 })
     .padding({ left: '5%', right: '5%', top: 15 })
     .alignItems(VerticalAlign.Top)
+    .onClick(() => {
+      HMRouterMgr.push({
+        pageUrl: 'PlayingPage',
+        navigationId: 'mainNavigation',
+        param: this.playingMusic.id
+      })
+    })
   }
 }
