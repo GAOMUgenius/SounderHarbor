@@ -45,18 +45,19 @@ class AvPlayManager {
 
   singPlay(song: MusicData) {
     //是否在列表
-    this.currentSong.id = song.id
     const inList = this.currentSong.playList.some(item => item.id === song.id)
     if (inList) {
       //在列表里面
       if (this.currentSong.url === song.url) {
         this.player?.play()
         this.currentSong.isplay = true
+        this.currentSong.id = song.id
       } else {
         //设置新的索引切歌
         this.currentSong.playIndex = this.currentSong.playList.findIndex(item => item.id === song.id)
         //切歌
         this.changeSong()
+        this.currentSong.id = song.id
       }
     } else {
       //不在列表里
@@ -65,6 +66,7 @@ class AvPlayManager {
       //切换歌曲
       this.changeSong()
       this.playingListSource.addMusic(song)
+      this.currentSong.id = song.id
     }
   }
 
@@ -148,6 +150,23 @@ class AvPlayManager {
     }
 
     this.singPlay(this.currentSong.playList[this.currentSong.playIndex])
+  }
+
+  deleteSong(id: string) {
+    let index = this.currentSong.playList.findIndex(item => {
+      // 确保item存在且有id属性（避免空指针错误）
+      return item && item.id === id;
+    });
+    if (index === this.currentSong.playIndex) {
+      this.currentSong.playList.splice(index, 1)
+      if (this.currentSong.playList.length !== 0) {
+        this.nextPlay()
+      } else {
+        this.paused()
+      }
+    } else {
+      this.currentSong.playList.splice(index, 1)
+    }
   }
 }
 

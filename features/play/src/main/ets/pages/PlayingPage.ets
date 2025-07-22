@@ -1,5 +1,5 @@
 import { HMRouter, HMRouterMgr } from "@hadss/hmrouter";
-import { APPConstants, MusicData, PlayingMusicData } from "datasource";
+import { APPConstants, MusicData, PlayingMusicData, PlayListSource } from "datasource";
 import { numberToTime, playerManager } from "utils";
 import { AudioBarProgress } from "../components/AudioBars";
 import { AppStorageV2 } from "@kit.ArkUI";
@@ -10,8 +10,11 @@ export struct PlayingPage {
   @Local playingData: PlayingMusicData =
     AppStorageV2.connect(PlayingMusicData, APPConstants.GLOBALMUSIC, () => new PlayingMusicData())!
   private swiperController1: SwiperController = new SwiperController();
+  @Local data: PlayListSource =
+    AppStorageV2.connect(PlayListSource, APPConstants.PLAYLISTMUSIC, () => new PlayListSource([]))!
   @Local audioBars: number[] = []
   @Local barCount: number = 30
+  @Local isShow: boolean = false;
 
   aboutToAppear(): void {
     let index = HMRouterMgr.getCurrentParam() as string;
@@ -262,7 +265,15 @@ export struct PlayingPage {
               .width(30)
               .height(30)
               .onClick(() => {
-
+                this.isShow = true
+              })
+              .bindSheet($$this.isShow, this.MusicList(), {
+                detents: [300, 600, 900],
+                uiContext: this.getUIContext(),
+                mode: SheetMode.OVERLAY,
+                scrollSizeMode: ScrollSizeMode.CONTINUOUS,
+                backgroundColor: '#f4eff1',
+                title: { title: 'Playlist', subtitle: `${this.playingData.playList.length.toString()}首` }
               })
 
 
@@ -339,5 +350,144 @@ export struct PlayingPage {
     .justifyContent(FlexAlign.Start)
     .padding({ left: "5%", right: "5%" })
 
+  }
+
+  @Builder
+  MusicList() {
+    Column() {
+      Image(this.playingData.img)
+        .width(150)
+        .height(150)
+        .borderRadius(75)
+        .shadow({
+          radius: 10,
+          color: '#ffe7e2e4',
+          offsetX: 30,
+          offsetY: 30
+        })
+      Text(this.playingData.singer)
+        .fontFamily(APPConstants.APPFONTFAMILY)
+        .fontColor($r('app.color.app_main_fontcolor'))
+        .fontSize(25)
+        .width('100%')
+        .textAlign(TextAlign.Center)
+        .margin({ top: 20 })
+      Text(this.playingData.title)
+        .fontFamily(APPConstants.APPFONTFAMILY)
+        .fontColor($r('app.color.app_main_fontcolor'))
+        .fontSize(40)
+        .letterSpacing(3)
+        .width('100%')
+        .textAlign(TextAlign.Center)
+        .margin({ top: 5 })
+      //TODO 歌词
+      Row()
+        .height(40)
+
+      List() {
+        ForEach(this.playingData.playList, (item: MusicData, index: number) => {
+          ListItem() {
+            Row() {
+              Text((index + 1).toString())
+                .fontFamily(APPConstants.APPFONTFAMILY)
+                .fontColor($r('app.color.app_main_fontcolor'))
+                .textAlign(TextAlign.Center)
+                .width(30)
+                .height(30)
+                .borderRadius(15)
+                .backgroundColor('#ffefebed')
+                .border({
+                  width: 1,
+                  color: '#ffdbd9d9'
+                })
+
+              Column() {
+                Text(item.title)
+                  .fontFamily(APPConstants.APPFONTFAMILY)
+                  .fontColor($r('app.color.app_main_fontcolor'))
+                  .fontSize(15)
+                  .textAlign(TextAlign.Start)
+                  .width('100%')
+                Text(item.singer)
+                  .fontFamily(APPConstants.APPFONTFAMILY)
+                  .fontColor($r('app.color.app_main_fontcolor'))
+                  .fontSize(10)
+                  .textAlign(TextAlign.Start)
+                  .width('100%')
+                  .margin({ top: 5 })
+              }
+              .layoutWeight(1)
+              .margin({ left: 10 })
+
+              Image($r('app.media.playing_like_ic_off'))
+                .width(40)
+                .height(40)
+                .padding(10)
+                .borderRadius(20)
+                .border({
+                  width: 1,
+                  color: '#ffdbd9d9'
+                })
+                .shadow({
+                  radius: 20,
+                  color: '#ffe7e2e4',
+                  offsetX: 10,
+                  offsetY: 10
+                })
+                .backgroundColor($r('sys.color.white'))
+            }
+            .alignItems(VerticalAlign.Center)
+            .height(70)
+            .padding({ left: '5%', right: '5%' })
+          }
+          .swipeAction({
+            end: {
+              builder: () => {
+                this.ItemEnd(item.id);
+              }
+            }
+          })
+        })
+      }
+      .divider({ strokeWidth: 1, color: '#ffe0e0e0' })
+      .border({
+        width: 1,
+        color: '#ffe0e0e0'
+      })
+      .borderRadius({ topLeft: 20, topRight: 20 })
+      .linearGradient({
+        direction: GradientDirection.RightBottom, // 渐变方向
+        repeating: false, // 渐变颜色是否重复
+        colors: [[0xffffff, 0.0], [0xf4eff1, 1.0]] // 数组末尾元素占比小于1时满足重复着色效果
+      })
+    }
+    .width('100%')
+    .backgroundColor('#f4eff1')
+  }
+
+  @Builder
+  ItemEnd(index: string) {
+    Image($r('app.media.play_playlist_delete'))
+      .width(40)
+      .height(40)
+      .padding(10)
+      .borderRadius(20)
+      .border({
+        width: 1,
+        color: '#ffdbd9d9'
+      })
+      .shadow({
+        radius: 20,
+        color: '#ffe7e2e4',
+        offsetX: 10,
+        offsetY: 10
+      })
+      .backgroundColor($r('sys.color.white'))
+      .onClick(() => {
+        // this.playingData.playList.splice(index, 1)
+        playerManager.deleteSong(index)
+        this.data.removeMusic(index)
+      })
+      .margin({ right: 20 })
   }
 }

@@ -60,7 +60,6 @@ export class PlayListSource extends BasicDataSource {
     const index = this.list.findIndex(item => item.id === id);
     if (index !== -1) {
       const removed = this.list.splice(index, 1)[0];
-      this.notifyDataReload();
 
       // 发送事件
       const event: emitter.InnerEvent = {
@@ -78,6 +77,7 @@ export class PlayListSource extends BasicDataSource {
 
       emitter.emit(event, eventData);
     }
+    this.notifyDataReload();
   }
 }
 
