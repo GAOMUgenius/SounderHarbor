@@ -74,6 +74,10 @@
     {
       "name": "play",
       "srcPath": "./features/play",
+    },
+    {
+      "name": "mine",
+      "srcPath": "./features/mine",
     }
   ]
 }

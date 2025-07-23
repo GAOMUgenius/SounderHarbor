@@ -1,0 +1,24 @@
+{
+  "color": [
+    {
+      "name": "app_main_fontcolor",
+      "value": "#385c70"
+    },
+    {
+      "name": "tab_sellcted_color",
+      "value": "#b0e1e6"
+    },
+    {
+      "name": "tab_title_color",
+      "value": "#325d6d"
+    },
+    {
+      "name": "tab_background_color",
+      "value": "#FFFFFFFF"
+    },
+    {
+      "name": "home_recommend_swiper_indicator_color",
+      "value": "#89bdcc"
+    }
+  ]
+}

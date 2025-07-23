@@ -10,6 +10,7 @@
     "utils": "file:../../commons/utils",
     "home": "file:../../features/home",
     "discovery": "file:../../features/discovery",
+    "mine": "file:../../features/mine",
     "play": "file:../../features/play"
   }
 }

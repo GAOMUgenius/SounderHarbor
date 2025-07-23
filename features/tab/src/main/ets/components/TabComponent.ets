@@ -7,6 +7,7 @@ import { TabBarType } from '../model/TabBarType';
 import { CustomTabBar } from './CustomTabBar';
 import { PlayMusicComponent } from './PlayMusicComponent';
 import { AppStorageV2, curves } from '@kit.ArkUI';
+import { MinePage } from 'mine';
 
 @HMRouter({ pageUrl: "TabComponent" })
 @ComponentV2
@@ -32,7 +33,7 @@ export struct TabComponent {
         }
 
         TabContent() {
-          Text('Mine')
+          MinePage()
         }
       }
       .layoutWeight(1)
