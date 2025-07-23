@@ -4,6 +4,7 @@ import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { resourceManager } from '@kit.LocalizationKit';
 import { AppStorageV2 } from '@kit.ArkUI';
+import { sessionManager } from './AvSessionManager';
 
 class AvPlayManager {
   // 属性 ＋ 方法
@@ -29,21 +30,28 @@ class AvPlayManager {
         this.currentSong.isplay = true
       } else if (state === 'completed') {
         this.nextPlay(true)
+      } else if (state === 'released') {
+        this.currentSong = new PlayingMusicData()
       }
     })
 
     //监听时间变化
     this.player.on('durationUpdate', (duration) => {
       this.currentSong.duration = duration
+      sessionManager.setAVMetadata(this.currentSong.playList[this.currentSong.playIndex])
     })
     this.player.on('timeUpdate', (time) => {
       this.currentSong.time = time
+      sessionManager.setAVPlayBackState()
     })
   }
 
   //播放歌曲 → 设置播放资源
 
   singPlay(song: MusicData) {
+    //申请长时任务
+    sessionManager.startBackgroundTask()
+    sessionManager.setAVPlayBackState()
     //是否在列表
     const inList = this.currentSong.playList.some(item => item.id === song.id)
     if (inList) {
@@ -110,6 +118,7 @@ class AvPlayManager {
   paused() {
     this.player?.pause()
     this.currentSong.isplay = false
+    sessionManager.setAVPlayBackState()
   }
 
   //上一首
@@ -167,6 +176,11 @@ class AvPlayManager {
     } else {
       this.currentSong.playList.splice(index, 1)
     }
+  }
+
+  //释放播放器和播放的数据
+  async release() {
+    await this.player?.release()
   }
 }
 
